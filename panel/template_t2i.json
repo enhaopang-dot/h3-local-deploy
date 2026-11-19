@@ -1,0 +1,76 @@
+{
+ "1": {
+  "inputs": {
+   "unet_name": "Z-Image-Turbo\\z_image_turbo_int8_convrot.safetensors",
+   "weight_dtype": "default"
+  },
+  "class_type": "UNETLoader"
+ },
+ "2": {
+  "inputs": {
+   "clip_name": "Z-Image-Turbo\\qwen_3_4b_fp8_mixed.safetensors",
+   "type": "qwen_image",
+   "device": "default"
+  },
+  "class_type": "CLIPLoader"
+ },
+ "3": {
+  "inputs": {
+   "clip": ["2", 0],
+   "prompt": "[[PROMPT]]",
+   "auto_resize_images": false
+  },
+  "class_type": "TextEncodeZImageOmni"
+ },
+ "4": {
+  "inputs": {
+   "clip": ["2", 0],
+   "prompt": "",
+   "auto_resize_images": false
+  },
+  "class_type": "TextEncodeZImageOmni"
+ },
+ "5": {
+  "inputs": {
+   "width": 1024,
+   "height": 1024,
+   "batch_size": 1
+  },
+  "class_type": "EmptyLatentImage"
+ },
+ "6": {
+  "inputs": {
+   "model": ["1", 0],
+   "positive": ["3", 0],
+   "negative": ["4", 0],
+   "latent_image": ["5", 0],
+   "seed": 0,
+   "steps": 8,
+   "cfg": 1.0,
+   "sampler_name": "euler",
+   "scheduler": "simple",
+   "denoise": 1.0
+  },
+  "class_type": "KSampler"
+ },
+ "7": {
+  "inputs": {
+   "vae_name": "Z-Image-Turbo\\ae.safetensors"
+  },
+  "class_type": "VAELoader"
+ },
+ "8": {
+  "inputs": {
+   "samples": ["6", 0],
+   "vae": ["7", 0]
+  },
+  "class_type": "VAEDecode"
+ },
+ "9": {
+  "inputs": {
+   "images": ["8", 0],
+   "filename_prefix": "image/zimage"
+  },
+  "class_type": "SaveImage"
+ }
+}

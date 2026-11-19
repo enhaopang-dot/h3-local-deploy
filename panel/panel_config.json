@@ -1,0 +1,8 @@
+{
+  "comfy_url": "http://127.0.0.1:8188",
+  "panel_port": 8199,
+  "panel_bind": "127.0.0.1",
+  "output_dir": "",
+  "input_dir": "",
+  "python": ""
+}

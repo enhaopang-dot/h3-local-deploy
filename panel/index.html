@@ -1,0 +1,2549 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>H3 视频工坊</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎬%3C/text%3E%3C/svg%3E">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    /* KEYON 暗色 navy（天宇科洋样稿同款），原变量名不变、值全换暗 */
+    --green:#49ccda; --green-d:#6fd8e3; --green-bg:rgba(73,204,218,.10); --green-bd:rgba(73,204,218,.32); --green-soft:rgba(73,204,218,.18);
+    --ink:#e9eff7; --sub:#a9b7c9; --weak:#7d90a8;
+    --line:#2a3b51; --bg:#101a29; --card:#172335; --nav:#0a1421; --navline:#1d2c3e; --input:#0e1826;
+    --amber:#f2bb69; --red:#f48d7f; --ok:#6ed4b1;
+    --sh-sm:0 1px 2px rgba(2,8,16,.4);
+    --sh-md:0 1px 2px rgba(2,8,16,.35), 0 10px 28px rgba(2,8,16,.45);
+    --r-lg:14px; --r-md:10px; --r-sm:8px;
+  }
+  body { font-family:"Avenir Next","PingFang SC","Microsoft YaHei","HarmonyOS Sans SC",system-ui,sans-serif;
+         background:radial-gradient(1100px 420px at 88% -8%, #15223878 0%, var(--bg) 58%) fixed;
+         color:var(--ink); min-height:100vh; -webkit-font-smoothing:antialiased;
+         font-variant-numeric:tabular-nums; font-size:15px; }
+  .wrap { width:100%; display:flex; align-items:stretch; }
+  /* ---------- 左导航 ---------- */
+  .side { width:224px; flex:none; background:var(--nav); border-right:1px solid var(--navline);
+          padding:20px 12px 16px; display:flex; flex-direction:column; position:sticky; top:0;
+          height:100vh; overflow-y:auto; }
+  .brand { display:flex; gap:10px; align-items:center; padding:2px 6px 12px; border-bottom:1px solid var(--navline); }
+  .brand .logo { width:36px; height:36px; flex:none; border-radius:10px; font-size:19px;
+                 background:linear-gradient(135deg,#5fd6e2,#2aa7bd); display:flex; align-items:center; justify-content:center;
+                 box-shadow:0 2px 10px rgba(73,204,218,.30); }
+  .brand h1 { font-size:17px; font-weight:600; letter-spacing:1px; }
+  .brand h1 span { color:var(--green); }
+  .brand .sub { font-size:11px; color:var(--weak); margin-top:3px; }
+  .status { font-size:12.5px; margin:12px 4px 0; color:var(--weak); }
+  .status b.on { color:var(--ok); } .status b.off { color:var(--red); }
+  .tabs { display:flex; flex-direction:column; gap:3px; margin:6px 0 0; }
+  .tabgroup { font-size:11px; color:var(--weak); padding:14px 14px 5px; letter-spacing:2px; }
+  .tab { flex:none; position:relative; text-align:left; padding:10px 14px 10px 19px; border-radius:9px; cursor:pointer;
+         background:transparent; color:var(--sub); font-size:15px; border:1px solid transparent; transition:all .16s ease; white-space:nowrap; }
+  .tab:hover { background:#16202e; color:var(--ink); }
+  .tab.active { background:rgba(73,204,218,.12); color:var(--green-d); border-color:transparent; font-weight:600; }
+  .tab.active::before { content:''; position:absolute; left:8px; top:50%; transform:translateY(-50%);
+                        width:3px; height:16px; border-radius:2px; background:var(--green); }
+  /* ---------- 主区 ---------- */
+  .main { flex:1; padding:0 26px 60px; min-width:0; }
+  .topbar { position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+            background:rgba(16,26,41,.9); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+            padding:14px 2px 12px; margin-bottom:16px; border-bottom:1px solid var(--navline); }
+  .topbar .tb-title { font-size:17px; font-weight:600; margin-right:auto; letter-spacing:.5px; }
+  .pill { display:inline-flex; align-items:center; gap:6px; padding:4px 11px; border-radius:999px; font-size:12.5px; font-weight:500;
+          background:var(--card); border:1px solid var(--line); color:var(--sub); white-space:nowrap; box-shadow:var(--sh-sm); }
+  .pill.green { background:rgba(110,212,177,.12); border-color:rgba(110,212,177,.35); color:var(--ok); }
+  .pill .dot { width:7px; height:7px; border-radius:50%; background:var(--ok); flex:none; }
+  .pill .dot.off { background:var(--red); }
+  .cols { display:flex; gap:22px; align-items:flex-start; }
+  .cwork { flex:1 1 620px; min-width:0; }
+  .cwork > .card, .cwork > .recent, .cwork > #refinebar, .cwork > .offbar { max-width:1040px; margin-left:auto; margin-right:auto; }
+  .rail { flex:0 0 300px; position:sticky; top:78px; }
+  @media (max-width:1240px) { .cols { flex-wrap:wrap; } .rail { flex:1 1 100%; position:static; } }
+  @media (max-width:880px) {
+    .wrap { flex-direction:column; }
+    .side { width:100%; height:auto; position:static; border-right:none; border-bottom:1px solid var(--navline); padding:14px 12px 8px; }
+    .main { padding:0 14px 40px; }
+    .tabs { flex-direction:row; overflow-x:auto; padding-bottom:4px; }
+    .tabgroup { display:none; }
+    .tab { flex:none; }
+  }
+  h1 { font-size:23px; font-weight:600; letter-spacing:2px; }
+  /* ---------- 卡片与控件 ---------- */
+  .card { background:var(--card); border:1px solid var(--navline); border-radius:var(--r-lg); padding:24px;
+          box-shadow:var(--sh-md); }
+  .card.anim { animation:fadeUp .28s ease; }
+  label { display:block; font-size:14px; color:var(--sub); font-weight:500; letter-spacing:.3px; margin:16px 0 7px; }
+  label:first-child { margin-top:0; }
+  textarea { width:100%; height:170px; resize:vertical; background:var(--input); color:var(--ink);
+             border:1px solid var(--line); border-radius:10px; padding:12px; font-size:15px; line-height:1.6;
+             font-family:inherit; outline:none; transition:border-color .15s, box-shadow .15s, background .15s; }
+  textarea:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(73,204,218,.14); }
+  .row { display:flex; gap:14px; }
+  .row > div { flex:1; min-width:0; }
+  #vrow { display:grid; grid-template-columns:repeat(3,1fr); gap:12px 14px; }
+  #gearcell { grid-column:1 / -1; }
+  @media (max-width:880px) { #vrow { grid-template-columns:1fr 1fr; } }
+  select { width:100%; background:var(--input); color:var(--ink); border:1px solid var(--line); border-radius:10px;
+           padding:10px 12px; font-size:15px; outline:none; transition:border-color .15s, box-shadow .15s, background .15s; }
+  select:focus { border-color:var(--green); box-shadow:0 0 0 3px rgba(73,204,218,.14); }
+  .drop { border:1.5px dashed #3a5069; border-radius:12px; padding:24px; text-align:center;
+          color:var(--weak); font-size:13.5px; cursor:pointer; transition:all .18s ease; background:var(--input); }
+  .drop:hover, .drop.over { border-color:var(--green); color:var(--green-d); background:rgba(73,204,218,.08); }
+  .drop img, .drop video { max-width:100%; max-height:180px; border-radius:8px; margin-top:10px; }
+  .ffrow { margin-top:10px; }
+  .fftag { font-size:12.5px; color:var(--weak); }
+  .ffcur { margin-top:6px; }
+  .ffcur img { max-height:140px; max-width:100%; border-radius:10px; border:2px solid var(--green); display:block; box-shadow:0 2px 10px rgba(73,204,218,.22); }
+  .ffcur .empty { display:inline-block; padding:16px 20px; border:1px dashed #3a5069; border-radius:8px; color:var(--weak); font-size:12px; }
+  .ffhint { font-size:11.5px; color:var(--weak); margin:4px 0 2px; }
+  .ffstrip { display:flex; gap:8px; overflow-x:auto; padding:6px 2px; }
+  .ffstrip img { height:56px; border-radius:8px; cursor:pointer; border:2px solid transparent; flex:none; transition:all .15s ease; }
+  .ffstrip img:hover { border-color:var(--green); transform:translateY(-2px); }
+  .ffstrip img.sel { border-color:var(--green); box-shadow:0 2px 8px rgba(73,204,218,.3); }
+  .go { width:100%; margin-top:22px; padding:14px 0; font-size:17px; font-weight:600; letter-spacing:4px;
+        color:#06222b; background:linear-gradient(90deg,#5fd6e2,#2aa7bd); border:none; border-radius:12px;
+        cursor:pointer; transition:all .18s ease; box-shadow:0 4px 14px rgba(73,204,218,.28); }
+  .go:hover { filter:brightness(1.07); transform:translateY(-1px); box-shadow:0 6px 18px rgba(73,204,218,.36); }
+  .go:active { transform:translateY(0); }
+  .go:disabled { opacity:.45; cursor:not-allowed; transform:none; box-shadow:none; }
+  .prog { margin-top:20px; display:none; }
+  .bar { height:6px; background:#233348; border-radius:3px; overflow:hidden; }
+  .bar i { display:block; height:100%; width:0%; border-radius:3px; position:relative; overflow:hidden;
+           background:linear-gradient(90deg,#49ccda,#2aa7bd); transition:width .8s ease; }
+  .bar i::after { content:''; position:absolute; inset:0;
+                  background:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.45) 50%,transparent 75%);
+                  transform:translateX(-100%); animation:shimmer 1.5s ease-in-out infinite; }
+  @keyframes shimmer { to { transform:translateX(100%); } }
+  .bar.indet i { width:30%; animation:slide 1.4s ease-in-out infinite; transition:none; }
+  @keyframes slide { 0%{margin-left:-30%} 100%{margin-left:100%} }
+  .ptext { font-size:14px; color:var(--sub); margin-top:10px; text-align:center; }
+  .result { margin-top:22px; display:none; }
+  .result.pop { animation:fadeUp .4s ease; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+  video { width:100%; border-radius:12px; background:#000; }
+  .rlinks { display:flex; justify-content:space-between; align-items:center; margin-top:10px; font-size:13.5px; }
+  .rlinks a { color:var(--green-d); text-decoration:none; }
+  .err { display:none; margin-top:16px; padding:12px 14px; background:rgba(244,141,127,.10); border:1px solid rgba(244,141,127,.35);
+         border-radius:10px; color:var(--red); font-size:13.5px; white-space:pre-wrap; }
+  .tip { font-size:13px; color:var(--weak); margin-top:14px; line-height:1.7; }
+  .lblrow { display:flex; justify-content:space-between; align-items:center; margin:16px 0 7px; }
+  .lblrow label { margin:0; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .clrbtn { border:1px solid var(--line); background:var(--card); color:var(--weak); border-radius:8px; padding:4px 10px; font-size:12.5px; cursor:pointer; transition:all .15s ease; white-space:nowrap; flex:none; }
+  .clrbtn:hover { color:var(--red); border-color:rgba(244,141,127,.4); background:rgba(244,141,127,.08); }
+  .optbtn { background:var(--green-bg); color:var(--green-d); border:1px solid var(--green-bd); border-radius:8px;
+            padding:5px 12px; font-size:12.5px; cursor:pointer; transition:all .15s ease; white-space:nowrap; }
+  .optbtn:hover { background:var(--green-soft); }
+  .optbtn:disabled { opacity:.45; cursor:not-allowed; }
+  .board { display:none; margin-top:12px; border:1px solid var(--navline); border-radius:10px; overflow:hidden; }
+  .board .btitle { background:#141f30; color:var(--sub); font-size:12.5px; padding:7px 12px;
+                   display:flex; justify-content:space-between; align-items:center; }
+  .board table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  .board td { padding:8px 12px; border-top:1px solid var(--navline); color:#c8d3e2; vertical-align:top; }
+  .board td.sec { color:var(--green-d); white-space:nowrap; width:64px; }
+  .board td[contenteditable]:hover { background:#16202e; cursor:text; }
+  .board td[contenteditable]:focus { background:#16202e; outline:1px solid var(--green-bd); }
+  .recent { display:none; margin:0 0 14px; background:var(--card); border:1px solid var(--navline); border-radius:12px; padding:10px 14px;
+            box-shadow:var(--sh-sm); }
+  .recent .rhead { font-size:13px; color:var(--sub); margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+  .recent .rhead b.busy { color:var(--green-d); }
+  .recent .chiprow { display:flex; gap:8px; overflow-x:auto; }
+  .recent .chip { flex:none; width:126px; cursor:pointer; transition:transform .15s ease; }
+  .recent .chip:hover { transform:translateY(-2px); }
+  .recent .chip .th { width:126px; height:71px; border-radius:var(--r-sm); overflow:hidden; background:#000; border:1px solid var(--navline); }
+  .recent .chip img, .recent .chip video { width:100%; height:100%; object-fit:cover; display:block; }
+  .recent .chip .nm { font-size:11.5px; color:var(--weak); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .recent .chip .th { position:relative; }
+  .recent .chip .del { position:absolute; top:2px; right:2px; width:18px; height:18px; padding:0; border:none; border-radius:50%; background:rgba(0,0,0,.55); color:#fff; font-size:11px; line-height:18px; cursor:pointer; }
+  .recent .chip .del:hover { background:rgba(244,141,127,.85); }
+  .recent .chip .fb { position:absolute; top:2px; left:2px; width:18px; height:18px; padding:0; border:none; border-radius:50%; background:rgba(73,204,218,.55); color:#fff; font-size:11px; line-height:18px; cursor:pointer; }
+  .recent .chip .fb:hover { background:rgba(73,204,218,.95); }
+  .recent .cancel { margin-left:auto; border:1px solid rgba(244,141,127,.4); background:rgba(244,141,127,.08); color:var(--red); border-radius:8px; padding:2px 10px; font-size:12.5px; cursor:pointer; }
+  .offbar { display:none; background:rgba(242,187,105,.10); border:1px solid rgba(242,187,105,.4); color:var(--amber); border-radius:10px; padding:9px 14px; font-size:13.5px; margin-bottom:12px; line-height:1.6; }
+  /* 右栏 */
+  .railcard { background:var(--card); border:1px solid var(--navline); border-radius:12px; padding:12px 12px 14px;
+              box-shadow:var(--sh-sm); }
+  .railcard .railhead { font-size:14px; font-weight:600; color:var(--ink); padding:2px 4px 10px; display:flex; align-items:center; gap:6px; }
+  .rail .recent { border:none; box-shadow:none; padding:0; margin:0; }
+  .rail .recent .rhead { padding:0 4px; flex-wrap:wrap; row-gap:4px; }
+  .rail .recent .chiprow { flex-wrap:wrap; overflow:visible; }
+  /* 2026-11-04 按要求收起「最近成片」栏，JS 仍可写入，只是不显示 */
+  .rail { display:none !important; }
+  /* 出片档位分段控件 */
+  .seg { display:flex; gap:4px; background:#0f1826; border:1px solid var(--navline); border-radius:var(--r-md); padding:4px; }
+  .segopt { flex:1; text-align:center; padding:9px 6px; border-radius:7px; cursor:pointer; font-size:14px;
+            color:var(--sub); line-height:1.45; transition:all .15s ease; user-select:none; }
+  .segopt small { display:block; font-size:11.5px; color:var(--weak); margin-top:2px; }
+  .segopt:hover { color:var(--ink); }
+  .segopt.on { background:var(--card); color:var(--green-d); font-weight:600; box-shadow:0 1px 4px rgba(2,8,16,.5); }
+  .segopt.on small { color:#49ccda; }
+  /* 细滚动条 */
+  .chiprow::-webkit-scrollbar, .ffstrip::-webkit-scrollbar { height:6px; }
+  .chiprow::-webkit-scrollbar-thumb, .ffstrip::-webkit-scrollbar-thumb { background:var(--line); border-radius:3px; }
+  .chiprow::-webkit-scrollbar-track, .ffstrip::-webkit-scrollbar-track { background:transparent; }
+  .side::-webkit-scrollbar { width:6px; }
+  .side::-webkit-scrollbar-thumb { background:#22334a; border-radius:3px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="side">
+    <div class="brand">
+      <div class="logo">🎬</div>
+      <div>
+        <h1>H3 <span>影像工坊</span></h1>
+        <div class="sub">MiniMax H3 · 本地生成面板</div>
+      </div>
+    </div>
+    <div class="status" id="svc">检测本地服务中…</div>
+    <div class="tabs">
+      <div class="tabgroup">生 成</div>
+      <div class="tab active" data-mode="t2i">✍️ 文字生图</div>
+      <div class="tab" data-mode="t2v">🎬 文字生视频</div>
+      <div class="tab" data-mode="i2v">🖼️ 图片生视频</div>
+      <div class="tab" data-mode="r2v">👤 参考生视频</div>
+      <div class="tabgroup">视频工具</div>
+      <div class="tab" data-mode="vext">⏩ 视频延续</div>
+      <div class="tab" data-mode="v2v">🎭 视频改视频</div>
+      <div class="tab" data-mode="vrep">🔁 视频复刻（换商品/换装）</div>
+      <div class="tab" data-mode="mixcut">🎬 视频混剪</div>
+      <div class="tab" data-mode="vup">🔍 视频超分</div>
+      <div class="tab" data-mode="frame">🎞️ 视频截帧</div>
+      <div class="tabgroup">图像工具</div>
+      <div class="tab" data-mode="i2e">🖌️ 图改图</div>
+      <div class="tab" data-mode="v2e">🪄 AI改图</div>
+      <div class="tab" data-mode="enh">✨ 照片清晰化</div>
+    </div>
+  </div>
+
+  <div class="main">
+  <div class="topbar">
+    <span class="tb-title" id="tbmode">✍️ 文字生图</span>
+    <span class="pill green">🎯 <b id="pillmp">流畅</b></span>
+    <span class="pill"><span class="dot" id="pilldot"></span><span id="pillsvc">检测中…</span></span>
+    <span class="pill" id="pillbusy">空闲</span>
+  </div>
+  <div class="cols">
+  <div class="cwork">
+  <div class="offbar" id="offbar">🟠 <b>ComfyUI 没开</b>——现在只能写写描述，生成不了。双击文件夹里的「一键启动-H3全部.bat」，等终端跑起来这条提示会自动消失（首次加载模型要几分钟，属正常）</div>
+
+  <div id="refinebar" style="display:none;margin:-4px 0 14px;background:var(--green-bg);border:1px solid var(--green-bd);border-radius:12px;padding:10px 14px">
+    <div style="font-size:12px;color:var(--sub)">📌 反馈对象：<b id="fbname"></b><span id="fbhint"></span></div>
+    <div id="fbhist"></div>
+    <textarea id="fbtext" rows="2" placeholder="这版哪里不好？比如：裙子颜色变了 / 脸变形了 / 动作太慢没到位" style="width:100%;box-sizing:border-box;margin-top:6px;border:1px solid #2a3b51;border-radius:8px;padding:8px;font-size:13px;resize:vertical"></textarea>
+    <div style="display:flex;gap:8px;margin-top:6px;align-items:center;flex-wrap:wrap">
+      <button id="fbsend" style="border:none;background:var(--green);color:#06222b;border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer">✍️ 按反馈重写 prompt</button>
+      <button id="fbcancel" style="border:1px solid var(--line);background:#1b293d;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer">取消</button>
+      <button id="fbclear" style="display:none;border:1px solid rgba(244,141,127,.35);background:rgba(244,141,127,.10);color:#f48d7f;border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer">清空迭代记录</button>
+      <span style="font-size:12px;color:var(--weak)">AI 记得前几轮聊过什么，约 1~3 分钟</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div id="imgbox" style="display:none">
+      <label id="imglabel">上传首帧图片</label>
+      <div class="drop" id="drop">点击选择图片，或把图片拖到这里<div id="prev"></div></div>
+      <input type="file" id="file" accept="image/*" style="display:none">
+      <div class="ffrow" id="ffrow" style="display:none">
+        <span class="fftag">📁 首帧</span>
+        <div class="ffcur" id="ffcur"></div>
+        <div class="ffhint">↑ 当前首帧 · 点下面缩略图更换</div>
+        <div class="ffstrip" id="ffstrip"></div>
+      </div>
+    </div>
+
+    <div id="refbox" style="display:none">
+      <label>辅助参考（锁脸用，可再传 1~3 张，正脸越清越好）</label>
+      <div class="drop" id="refdrop">点击追加参考照片，可一次多选<div id="refprev"></div></div>
+      <input type="file" id="reffile" accept="image/*" multiple style="display:none">
+    </div>
+
+    <div id="vsrcbox" style="display:none">
+      <label>源视频</label>
+      <div class="drop" id="vsrcdrop">点击选择视频，或把视频文件拖到这里<div id="vsrcprev"></div></div>
+      <input type="file" id="vsrcfile" accept="video/*" style="display:none">
+    </div>
+
+    <div id="repbox" style="display:none">
+      <div class="tip" style="margin:0 0 14px;padding:10px 14px;background:rgba(73,204,218,.10);border:1px solid rgba(73,204,218,.32);border-radius:10px;color:#6ed4b1">
+        本地复刻：原片的镜头运动、人物动作、背景都保留，只重绘你框出来的那块。做法是「视频修复 + 参考图重绘」，不是文生视频。
+      </div>
+      <label>1. 原视频</label>
+      <div class="drop" id="repdrop">点击选择视频，或把文件拖到这里<div id="repprev"></div></div>
+      <input type="file" id="repfile" accept="video/*" style="display:none">
+
+      <label style="margin-top:14px">2. 新商品／新服装图</label>
+      <div class="drop" id="repprod">点击上传一张商品图<div id="repprodprev"></div></div>
+      <input type="file" id="repprodfile" accept="image/*" style="display:none">
+
+      <label style="margin-top:14px">3. 在画面上拖一个框，圈住要换的东西</label>
+      <div style="position:relative;display:inline-block;max-width:100%">
+        <canvas id="repcanvas" style="max-width:100%;border-radius:10px;cursor:crosshair"></canvas>
+      </div>
+      <div style="font-size:12.5px;color:#7d90a8;margin-top:6px" id="repboxinfo">还没选区域</div>
+
+      <label style="margin-top:14px">换什么（可改）</label>
+      <textarea id="repprompt" rows="2" style="width:100%">把框里的内容换成商品图里的那件商品，保持同一个人、同一姿态、同一光照和背景，画面风格不变。</textarea>
+
+      <button class="go" id="repgo" style="margin-top:10px">🔁 开始复刻</button>
+      <div class="prog" id="repprog" style="display:none">
+        <div class="bar"><i id="repbar"></i></div>
+        <div class="ptext" id="reptext">准备中…</div>
+      </div>
+      <div id="represult" style="display:none;margin-top:12px">
+        <video id="repvid" controls style="width:100%;border-radius:12px"></video>
+        <div style="margin-top:6px;color:#7d90a8;font-size:12.5px" id="repname"></div>
+      </div>
+    </div>
+
+    <div id="mixcutbox" style="display:none">
+      <div class="tip" style="margin:0 0 14px;padding:10px 14px;background:rgba(73,204,218,.10);border:1px solid rgba(73,204,218,.32);border-radius:10px;color:#6ed4b1">
+        文案 → 分镜 → 配音 → 字幕 → 成片一条龙。文案走 DeepSeek，画面素材由本机 ComfyUI 现生成，配音走本地 IndexTTS 2.5，全程不出网、不花钱。
+      </div>
+      <label>服务状态</label>
+      <div id="mixcutstatus" style="font-size:13px;color:#7d90a8;margin:6px 0 12px">未检测</div>
+      <button class="go" id="mixcutgo" style="margin-top:6px">▶ 启动并打开视频混剪</button>
+      <div class="tip" style="margin-top:16px">首次启动约 10~20 秒；第一张图要加载生图模型，约 1~3 分钟，之后每张几十秒。成片存在面板配置的输出目录下。</div>
+    </div>
+
+    <div id="v2vbox" style="display:none">
+      <div class="tip" style="margin:0 0 14px;padding:10px 14px;background:rgba(73,204,218,.10);border:1px solid rgba(73,204,218,.32);border-radius:10px;color:#6ed4b1">
+        ✅ <b>Fun ControlNet-Union-2.0 已接入</b>：源片逐帧转 Canny 结构控制，动作/构图/运镜逐帧复刻原片，画面按你的描述整体重绘。比例清晰度自动跟源片，超 14 秒自动分段拼接。
+      </div>
+    </div>
+
+    <div id="vupbox" style="display:none">
+      <button class="go" id="vupgo" style="margin-top:6px">🔍 开始超分</button>
+      <div class="prog" id="vupprog" style="display:none">
+        <div class="bar indet"><i></i></div>
+        <div class="ptext" id="vuptext">超分中…</div>
+      </div>
+      <div class="result" id="vupresult" style="margin-top:22px;display:none">
+        <video id="vupvid" controls loop playsinline style="width:100%;border-radius:12px"></video>
+        <div class="rlinks">
+          <span id="vupname" style="color:#7d90a8"></span>
+          <a id="vupdl" href="#" download>⬇ 下载超分版</a>
+        </div>
+      </div>
+      <div class="tip" style="margin-top:16px">提示：超分 = 把视频放大到长边 1920、严格保持原比例（竖屏还是竖屏）。本地 GPU 逐帧 AI 超分，比生成快很多，约 0.1~0.3 秒一帧。成片自动存进 output\video\ 目录。</div>
+    </div>
+
+    <div id="framebox" style="display:none">
+      <label>选源视频（上方「源视频」框已通用，点这里直接提取尾帧）</label>
+      <button class="go" id="framego" style="margin-top:22px">⏮ 提取最后一帧</button>
+      <div class="prog" id="frameprog">
+        <div class="bar indet"><i></i></div>
+        <div class="ptext">ffmpeg 提取中…（秒级，不占显卡）</div>
+      </div>
+      <div class="result" id="frameresult" style="margin-top:22px;display:none">
+        <img id="frameimg" style="width:100%;border-radius:12px">
+        <div class="rlinks">
+          <span id="framename" style="color:#7d90a8"></span>
+          <a id="framedl" href="#" download>⬇ 下载尾帧图</a>
+        </div>
+      </div>
+      <div class="tip" style="margin-top:16px">提示：尾帧自动存进 输出目录的 image/ 子目录 图片库，可直接拿去「图改图 / 图片生视频」当输入图。</div>
+    </div>
+
+    <div id="enhbox" style="display:none">
+      <label>传一张要弄清晰的照片（人脸/全身照都行）</label>
+      <div class="drop" id="enhdrop">点击选择照片，或把图片拖到这里<div id="enhprev"></div></div>
+      <input type="file" id="enhfile" accept="image/*" style="display:none">
+      <div class="row" style="margin-top:18px">
+        <div>
+          <label>人脸修复</label>
+          <select id="enhface">
+            <option value="natural" selected>✨ 自然保脸（推荐·不变假脸）</option>
+            <option value="strong">强力修脸（糊脸专用）</option>
+            <option value="off">不修脸（只整体超分）</option>
+          </select>
+        </div>
+        <div>
+          <label>输出尺寸</label>
+          <select id="enhscale">
+            <option value="1" selected>原尺寸（比例不变，只变清晰）</option>
+            <option value="2">放大 2 倍</option>
+            <option value="4">放大 4 倍（最清晰）</option>
+          </select>
+        </div>
+      </div>
+      <button class="go" id="enhgo" style="margin-top:22px">✨ 开始增强</button>
+      <div class="prog" id="enhprog">
+        <div class="bar indet"><i></i></div>
+        <div class="ptext">增强中（约30秒~2分钟，别关页面）…</div>
+      </div>
+      <div class="result" id="enhresult" style="margin-top:22px;display:none">
+        <img id="enhimg" style="width:100%;border-radius:12px">
+        <div class="rlinks">
+          <span id="enhname" style="color:#7d90a8"></span>
+          <a id="enhdl" href="#" download>⬇ 下载清晰版</a>
+        </div>
+      </div>
+      <div class="tip" style="margin-top:16px">提示：清晰版自动存进 output\image\ 图片库。人脸修复会"脑补"五官细节，特别糊的照片可能和本人有轻微出入——不像就把人脸修复关掉、只跑整体超分，或者重传一张更清楚的原图。</div>
+    </div>
+
+    <div class="lblrow" id="optrow">
+      <label>描述你想要的画面（中文英文都行，越具体越好）</label>
+      <span style="display:flex;gap:8px;flex:none">
+        <button class="clrbtn" id="clrbtn" title="清掉描述和照片，重新开始">🗑 清空重来</button>
+        <button class="clrbtn" id="tplbtn" title="把这个模式的提示词骨架插进输入框，你直接往里填内容；已经写了内容就追加到末尾">📋 插入模板</button>
+        <select id="optmodel" title="跟哪个模型聊：快速=qwen2.5vl 7B（看图够用，40~90 秒）／精细=qwen3-vl 8B（会思考，慢 2~4 倍，偶尔空返回要重试）"
+                style="width:auto;flex:none;height:30px;background:#141f30;color:#c8d3e2;border:1px solid #2a3b51;border-radius:8px;padding:0 6px;font-size:12px;outline:none">
+          <option value="fast" selected>⚡ 快速</option>
+          <option value="deep">🧠 精细</option>
+        </select>
+        <button class="optbtn" id="opt">✨ AI 优化描述</button>
+      </span>
+    </div>
+    <div class="lblrow" id="plrow" style="display:none">
+      <label>描述你想要的画面（中文英文都行，越具体越好）</label>
+    </div>
+    <textarea id="prompt"></textarea>
+    <div id="askrow" style="display:none;margin:8px 0 0;gap:8px;align-items:center">
+      <input id="askinput" placeholder="说说你的想法：哪里不对、漏了什么、想往哪个方向走（不用写成指令，AI 自己会改）"
+             style="flex:1;background:#141f30;color:#e9eff7;border:1px solid #2a3b51;border-radius:8px;padding:8px 10px;font-size:13px;outline:none">
+      <button class="clrbtn" id="askbtn" style="flex:none" title="把你的想法交给 AI，由它理解后改写提示词，可以连续多轮">✍️ 让 AI 按我的想法调</button>
+      <button class="clrbtn" id="askclear" style="flex:none;display:none" title="清空这段对话记录，AI 忘掉前几轮">清空对话</button>
+    </div>
+    <div id="askhist" style="margin:6px 0 0;font-size:12px;color:#8fa3ba;line-height:1.7"></div>
+    <div id="optzh" style="display:none;margin:8px 0 0;padding:9px 11px;background:#101a28;border:1px solid #22324a;border-radius:8px;font-size:12px;color:#8fa3ba;line-height:1.65"></div>
+    <div class="board" id="board"></div>
+
+    <div class="row" id="vrow">
+      <div>
+        <label id="durlabel">时长（秒，可自己填，建议 2~10）</label>
+        <input type="number" id="dur" value="5" min="1" max="15" step="1"
+               style="width:100%;background:#141f30;color:#e9eff7;border:1px solid #2a3b51;border-radius:10px;padding:10px 12px;font-size:14px;outline:none">
+      </div>
+      <div>
+        <label>清晰度</label>
+        <select id="mp">
+          <option value="0.2" selected>流畅（快，推荐）</option>
+          <option value="0.4">标清（慢一倍）</option>
+          <option value="0.6">高清 0.6MP 直出（更真·慢两倍·合成1080p）</option>
+        </select>
+      </div>
+      <div>
+        <label>画面比例</label>
+        <select id="ratio">
+          <option value="auto" selected>保持原图比例（默认）</option>
+          <option value="16:9 (Widescreen)">横屏 16:9</option>
+          <option value="4:3 (Standard)">横屏 4:3</option>
+          <option value="1:1 (Square)">方形 1:1</option>
+          <option value="3:4 (Portrait Standard)">竖屏 3:4</option>
+          <option value="9:16 (Portrait Widescreen)">竖屏 9:16</option>
+        </select>
+      </div>
+      <div id="gearcell">
+        <label>出片档位</label>
+        <div class="seg" id="modeseg" title="A/B实测(2026-10-12): 20步正片档肤色更白皙、色调更清新、五官细节更干净, 耗时约2.7倍; 出街正片建议用正片档">
+          <div class="segopt on" data-q="turbo">⚡ 草稿档<small>8 步 · 约 7 分钟</small></div>
+          <div class="segopt" data-q="full">🎬 正片档<small>20 步 · 约 20 分钟 · 白皙细节最稳</small></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row" id="irow" style="display:none">
+      <div>
+        <label>画面尺寸（越大越清晰，也越慢）</label>
+        <select id="isize">
+          <option value="keep" selected>保持原图比例（跟上传照片）</option>
+          <option value="1:1">方形 1:1（1024×1024，最快）</option>
+          <option value="16:9">横屏 16:9（1344×768）</option>
+          <option value="4:3">横屏 4:3（1152×864）</option>
+          <option value="3:4">竖屏 3:4（864×1152）</option>
+          <option value="9:16">竖屏 9:16（768×1344）</option>
+        </select>
+      </div>
+      <div id="engbox" style="display:none">
+        <label>生图引擎（10-17 新增）</label>
+        <select id="ieng">
+          <option value="z" selected>Z图·极速（8 步，草稿向）</option>
+          <option value="q1k">Qwen2.1·1K 高质（28 步，推荐）</option>
+          <option value="q2k">Qwen2.1·2K 高质（慢 2~3 倍）</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row" id="erow" style="display:none">
+      <div>
+        <label>清晰度</label>
+        <select id="emp">
+          <option value="0" selected>跟原图一致（默认）</option>
+          <option value="1.0">高清（约100万像素，细节好）</option>
+          <option value="0.4">标清（约40万像素，更快）</option>
+        </select>
+      </div>
+      <div>
+        <label>画面比例</label>
+        <select id="eratio">
+          <option value="keep" selected>保持原图比例（默认）</option>
+          <option value="1:1">方形 1:1</option>
+          <option value="16:9">横屏 16:9</option>
+          <option value="4:3">横屏 4:3</option>
+          <option value="3:4">竖屏 3:4</option>
+          <option value="9:16">竖屏 9:16</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:22px;align-items:stretch" id="gorow">
+      <select id="takes" title="同一个描述连抽几条不同版本，挑最好的留（视频单条成功率本就靠抽）"
+              style="flex:none;width:92px;background:#141f30;color:#e9eff7;border:1px solid #2a3b51;border-radius:10px;padding:0 8px;font-size:14px;outline:none;cursor:pointer">
+        <option value="1" selected>抽 1 条</option>
+        <option value="2">连抽 2 条</option>
+        <option value="3">连抽 3 条</option>
+        <option value="4">连抽 4 条</option>
+      </select>
+      <button class="go" id="go" style="margin-top:0;flex:1">生 成</button>
+    </div>
+
+    <div class="lvbox" id="lvbox" style="display:none;margin-top:18px;border:1px dashed #3a5069;border-radius:14px;padding:14px 16px;background:#141f30">
+      <label style="display:flex;gap:8px;align-items:center;cursor:pointer;font-size:14px;color:#c8d3e2;font-weight:600">
+        <input type="checkbox" id="lven" style="width:16px;height:16px;cursor:pointer">
+        🎬 长视频模式<span style="font-weight:400;color:#7d90a8;font-size:12px">（超 15 秒自动拆段连跑 + 尾帧续接 + 无损拼接，想多长填多长）</span>
+      </label>
+      <div id="lvctl" style="display:none;margin-top:12px">
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div>
+            <label style="font-size:12px;color:#a9b7c9">总时长（秒，16~600）</label>
+            <input type="number" id="lvsec" value="30" min="16" max="600" step="1"
+                   style="width:110px;background:#1b293d;color:#e9eff7;border:1px solid #2a3b51;border-radius:10px;padding:9px 12px;font-size:14px;outline:none">
+          </div>
+          <button class="optbtn" id="lvplan" style="margin-bottom:1px">📋 AI 拆段·生成分镜</button>
+          <span id="lvstat" style="font-size:12px;color:#7d90a8;margin-bottom:8px"></span>
+        </div>
+        <div id="lvsegs" style="margin-top:10px"></div>
+        <button class="go" id="lvrun" style="display:none;margin-top:12px;width:100%">▶ 开始连跑</button>
+        <div style="font-size:12px;color:#7d90a8;margin-top:8px;line-height:1.7">
+          流程：AI 按动作完整性拆成 N 段（每段 5~15 秒）→ 逐段生成 → 每段尾帧自动当下段首帧（画面无缝衔接）→ 全部完成后 ffmpeg 无损拼成一条。
+          分镜表格里每段的时长和提示词都可以改，改完再点连跑。中途某段失败会停下报错，已出的段都在 output 目录里不丢。
+        </div>
+      </div>
+    </div>
+
+    <div id="vextmore" style="display:none;margin-top:18px;border:1px dashed rgba(110,212,177,.45);border-radius:14px;padding:14px 16px;background:rgba(73,204,218,.10)">
+      <div style="font-size:14px;color:#6ed4b1;font-weight:600;margin-bottom:8px">✅ 这一段续好了</div>
+      <div style="font-size:12px;color:#a9b7c9;margin-bottom:10px;line-height:1.7">
+        每点一次按钮就多续一段，画面从上一段最后一帧无缝接。可以改描述（接下来发生什么）再续，时长相加就是总延长量。
+      </div>
+      <button class="go" id="vextmorebtn" style="width:100%">➕ 再续一段</button>
+    </div>
+
+    <div class="prog" id="prog">
+      <div class="bar"><i></i></div>
+      <div class="ptext" id="ptext">生成中…</div>
+    </div>
+
+    <div class="err" id="err"></div>
+
+    <div class="result" id="result">
+      <img id="rimg" style="display:none;width:100%;border-radius:12px">
+      <video id="vid" controls autoplay loop muted></video>
+      <div id="v2egrid" style="display:none;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px"></div>
+      <div class="rlinks">
+        <span id="rname" style="color:#7d90a8"></span>
+        <a id="rdl" href="#" download>⬇ 下载</a>
+      </div>
+    </div>
+
+    <div class="tip" id="tip"></div>
+  </div>
+  </div><!-- /cwork -->
+  <div class="rail">
+    <div class="railcard">
+      <div class="recent" id="recent"></div>
+    </div>
+  </div>
+  </div><!-- /cols -->
+  </div><!-- /main -->
+</div>
+
+<script>
+let mode = 't2i', tpl = {}, imgName = null, imgRatio = null, refNames = [], busy = false;
+
+// 每个模式:upload=要传图 opt=有AI优化 vrow=视频参数行 irow=图片尺寸行 ph=输入框提示 tip=底部提示
+const MODES = {
+ t2i: { upload: false, opt: true, vrow: false, irow: true, loadEta: '首次约 2~3 分钟',
+        ph: '例：一只橘猫趴在木质窗台上晒太阳，午后金色阳光，浅景深，温馨治愈风格',
+        tip: '提示：图片保存在 输出目录的 image/ 子目录 目录。引擎选 Z图约 30~60 秒一张；Qwen2.1 高质档首图约 2~4 分钟（含模型加载），之后约 1~3 分钟一张。Qwen2.1 中文文字渲染远强于 Z图，需要画面里出字时选它。' },
+ i2e: { upload: true, opt: true, vrow: false, irow: true, imglabel: '上传要修改的原图', loadEta: '首次约 2~3 分钟',
+        ph: '例：把背景换成海边日落，其他保持不变 / 把外套换成黑色皮夹克 / 头发改成蓬松卷发',
+        tip: '提示：Qwen-Image-Edit 2511 精准局部编辑——构图、人物位置、脸保持不变，只改你点名的那部分。首次约 2~3 分钟（含 19GB 模型加载），之后约 40~90 秒一张。这一步会和视频生成抢显存，别同时跑。' },
+ v2e: { upload: true, opt: true, vrow: true, irow: false, durclear: true, imglabel: '上传要修改的图片', loadEta: '首次约 2~4 分钟',
+        durlabel: '时长（秒，留空=AI 按内容定，建议 5~8）',
+        ph: '例：把上衣换成酒红色针织开衫，其他不变 / 脱掉外面的风衣，只留里面的白T恤 / 把头发换成蓬松的爆炸头',
+        tip: '提示：改图新方案——H3 以你的原图为首帧生成视频，开头约 1 秒完成替换、之后做动作或停住，出片后按每秒 8 张抽帧给你挑，点图下载，全部已存进 output\\image\\ 图片库。时长留空由 AI 按内容定（5~8 秒；H3 训练下限是 124 帧≈5.2 秒，更短替换会不稳）。换装、换发型这类大改动，建议清晰度选「标清」、档位选「正片档」。' },
+ t2v: { upload: false, opt: true, vrow: true, irow: false,
+        ph: '例：雨后黄昏的城市天台，一个穿风衣的人起跑、助跑后纵身跃向对面楼顶，慢动作，电影感',
+        tip: '提示：视频文件同时保存在 输出目录的 video/ 子目录 目录。生成期间可以最小化本页面，但不要关闭电脑。' },
+ i2v: { upload: true, opt: true, vrow: true, irow: false, imglabel: '上传首帧图片',
+        ph: '例：画面里的人转过身对我微笑招手，镜头缓慢推近',
+        tip: '提示：视频文件同时保存在 输出目录的 video/ 子目录 目录。生成期间可以最小化本页面，但不要关闭电脑。' },
+ r2v: { upload: true, opt: true, vrow: true, irow: false, gear: false, multi: true, imglabel: '上传主图（场景+人物基准，1 张）', loadEta: '首次约 3~5 分钟',
+        ph: '例：她对着镜头微笑，轻轻撩一下头发，镜头缓慢推近，光线柔和，画面稳定',
+        tip: '提示：专治"视频里人脸不像本人"。主图决定场景、衣服和光线（视频会在主图的环境里生成），辅助参考让脸锁得更死。描述里不用写长相，写动作/镜头/光线即可。视频保存在 输出目录的 video/ 子目录 目录。' },
+ vext: { upload: false, opt: true, vrow: true, irow: false, vidbox: true, vextbox: true, durlabel: '每段时长（1~15 秒）',
+        ph: '例：镜头继续往前推，那个人缓缓转过身，朝远方走去',
+        tip: '提示：源片当开头，AI 从尾帧无缝往后续写，尺寸比例自动跟源片。每段 1~15 秒，跑完点「再续一段」可无限续；源片和续段自动拼成完整片交付，成片在 output\\video\\ 目录。' },
+ v2v: { upload: false, opt: true, vrow: true, irow: false, vidbox: true, v2vbox: true, durlabel: '每段时长',
+        ph: '例：把这段视频改成夜晚霓虹赛博朋克风，动作保持原样',
+        tip: '提示：Fun ControlNet 整片重绘——源片逐帧转 Canny 结构控制，AI 按你的描述重绘画面，动作/构图/运镜逐帧复刻原片。比例清晰度自动跟源片，超 14 秒自动分段拼接，全程一次点生成。' },
+ vrep: { upload: false, opt: false, vrow: false, irow: false, rep: true, ph: '', tip: '' },
+ mixcut: { upload: false, opt: false, vrow: false, irow: false, ph: '', tip: '' },
+ vup: { upload: false, opt: false, vrow: false, irow: false, vidbox: true, vupbox: true, ph: '', tip: '' },
+ frame: { upload: false, opt: false, vrow: false, irow: false, ph: '', tip: '' },
+ enh: { upload: false, opt: false, vrow: false, irow: false, ph: '', tip: '' },
+};
+const ISIZES = { '1:1': [1024, 1024], '16:9': [1344, 768], '4:3': [1152, 864],
+                 '3:4': [864, 1152], '9:16': [768, 1344] };
+
+// 提示词骨架(2026-10-23 用户拍板): 点「插入模板」把段落结构填进输入框, 用户往里填内容, 不必先跑 AI 优化
+// 只含段落标题+硬约束, 不含"最高铁律/输出前自检"这类元指令(混进提示词会让模型当画面描述理解)
+const TPL_SKELETON = {
+  t2v: `【主体】东亚年轻女性，皮肤白皙透亮、细腻光滑，身材纤细单薄。发型发色：。服装：
+【场景】时间与光线方向：。地点与陈设：。天气与氛围：
+【动作节拍】开始：。随后：。最后：
+【分镜头】镜头1(0~3秒)：。镜头2(3~5秒)：
+【镜头】
+【风格色调】清新淡雅低饱和，自然暖白光线，日系写真质感
+【声音】①环境音：　②动作音：　③配乐：
+【人脸一致性】同一人物，全片面部特征保持完全一致，不变脸。特征锁定：脸型、眼型、鼻型、唇形、眉形、肤色、发型发色。动态约束：五官形状、相对位置、面部比例保持一致，不漂移、不换脸、不增减特征
+【人体结构】人体解剖结构自然准确，身体比例正常。头颈肩连接自然、躯干四肢比例正常、手部五指完整、腰臀曲线自然。无器官漂移、无肢体增减、无关节反折`,
+
+  t2i: `【主体】东亚年轻女性，皮肤白皙透亮、细腻光滑，身材纤细单薄
+【场景】
+【动作表情】
+【风格】清新淡雅低饱和，自然暖光，日系写真质感，细节清晰`,
+
+  i2e: `【修改内容】
+（在这里写要改什么，一行一条，例如：把外套换成黑色皮夹克）
+【保持不变】脸部、五官、脸型、肤色、表情、年龄感保持一致，不重新生成脸；未点名的发型、配饰、背景、构图、光线、色调全部保持原图
+【人体结构】保持原图同一身体结构，躯干四肢比例一致；头颈肩连接自然、手部五指完整、无新增或缺失肢体、无关节反折
+【风格质感】保留原图颗粒感与光比；皮肤白皙细腻光滑、无明显瑕疵，色调清新低饱和`,
+
+};
+
+// 模式 -> 骨架：视频类共用 t2v 结构；改图类(i2e/v2e)共用 i2e 结构
+function skeletonFor(m) {
+  if (m === 't2i') return TPL_SKELETON.t2i;
+  if (m === 'i2e' || m === 'v2e') return TPL_SKELETON.i2e;
+  if (m === 't2v' || m === 'i2v' || m === 'r2v' || m === 'vext' || m === 'v2v') return TPL_SKELETON.t2v;
+  return '';
+}
+
+// 原图比例 → 最接近的 ResolutionSelector 档
+const RATIO_TABLE = [
+  ['21:9 (Ultrawide)', 21/9], ['16:9 (Widescreen)', 16/9], ['3:2 (Photo)', 1.5],
+  ['4:3 (Standard)', 4/3], ['1:1 (Square)', 1], ['3:4 (Portrait Standard)', 0.75],
+  ['2:3 (Portrait Photo)', 2/3], ['9:16 (Portrait Widescreen)', 9/16]
+];
+function nearestRatio(r) {
+  let best = RATIO_TABLE[0], bd = Infinity;
+  for (const [name, v] of RATIO_TABLE) {
+    const d = Math.abs(Math.log(r / v));
+    if (d < bd) { bd = d; best = [name, v]; }
+  }
+  return best[0];
+}
+
+// 服务状态
+function syncSvcPill(ok, txt) {
+  const d = document.getElementById('pilldot'), s = document.getElementById('pillsvc');
+  if (d) d.classList.toggle('off', !ok);
+  if (s) s.textContent = txt;
+}
+fetch('/api/system_stats').then(r => r.ok ? r.json() : Promise.reject()).then(() => {
+  document.getElementById('svc').innerHTML = '本地 H3 服务：<b class="on">● 在线</b>';
+  syncSvcPill(true, '本地服务在线');
+}).catch(() => {
+  document.getElementById('svc').innerHTML = '本地 H3 服务：<b class="off">● 离线</b>（请先双击 scripts/03_start_comfyui.sh）';
+  syncSvcPill(false, 'ComfyUI 离线');
+});
+
+// 模板
+for (const m of ['t2i', 't2v', 'i2v', 'r2v']) fetch(`/template_${m}.json`).then(r => r.json()).then(j => tpl[m] = j);
+// 10-17 Qwen-Image-2.1 高质生图引擎（文字生图模式专用，引擎下拉选 q1k/q2k 时启用）
+fetch('/template_t2i_q21.json').then(r => r.json()).then(j => tpl.t2i_q21 = j);
+// 视频改视频/视频延续 第1段复用 i2v 拼板(首帧=源片尾帧), 续写段也走 i2v
+fetch('/template_i2v.json').then(r => r.json()).then(j => { tpl.vext = j; tpl.v2v = j; });
+// 10-23 精准图改图(Qwen-Image-Edit 2511)
+fetch('/template_i2e.json').then(r => r.json()).then(j => tpl.i2e = j);
+
+// 按模式切换界面
+function applyMode() {
+  const c = MODES[mode];
+  const isFrame = mode === 'frame';
+  const isEnh = mode === 'enh';
+  const isVup = mode === 'vup';
+  document.getElementById('framebox').style.display = isFrame ? '' : 'none';
+  document.getElementById('enhbox').style.display = isEnh ? '' : 'none';
+  document.getElementById('vupbox').style.display = isVup ? '' : 'none';
+  document.getElementById('v2vbox').style.display = (mode === 'v2v') ? '' : 'none';
+  document.getElementById('repbox').style.display = (mode === 'vrep') ? '' : 'none';
+  if (mode === 'vrep') {
+    ['imgbox','vsrcbox','refbox','optrow','prompt','vrow','irow','engbox','erow','gorow','lvbox','gearcell','plrow']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    const tip = document.getElementById('tip'); if (tip) tip.style.display = 'none';
+    return;
+  }
+  document.getElementById('mixcutbox').style.display = (mode === 'mixcut') ? '' : 'none';
+  if (mode === 'mixcut') {
+    // 混剪是独立服务(8501)，本页不占 H3 模型；把生成类控件全部藏掉，只留启动卡片
+    ['imgbox','vsrcbox','refbox','optrow','prompt','vrow','irow','engbox','erow','gorow','lvbox','gearcell','plrow',
+     'framebox','enhbox','vupbox','v2vbox','repbox']
+      .forEach(id => { const el = document.getElementById(id); if (el) el.style.display = 'none'; });
+    const tip = document.getElementById('tip'); if (tip) tip.style.display = 'none';
+    mixcutStatus();  // 进页就刷新一次服务状态，别让用户对着旧状态点空
+    clearBoard();
+    const actTabM = document.querySelector('.tab.active');
+    const tbM = document.getElementById('tbmode');
+    if (actTabM && tbM) tbM.textContent = actTabM.textContent.trim();
+    return;
+  }
+  document.getElementById('vsrcbox').style.display = (c.vidbox || isFrame) ? '' : 'none';
+  document.getElementById('imgbox').style.display = c.upload ? '' : 'none';
+  if (c.upload) loadFirstFrames();
+  else document.getElementById('ffrow').style.display = 'none';
+  document.getElementById('refbox').style.display = c.multi ? '' : 'none';
+  document.getElementById('imglabel').textContent = c.imglabel || '上传图片';
+  document.getElementById('optrow').style.display = c.opt ? '' : 'none';
+  document.getElementById('plrow').style.display = (c.opt || isFrame || isEnh || isVup) ? 'none' : '';
+  document.getElementById('prompt').style.display = (isFrame || isEnh || isVup) ? 'none' : '';
+  document.getElementById('vrow').style.display = c.vrow ? '' : 'none';
+  // v2v 整片重绘: 时长由源片决定, 藏"每段时长"格(清晰度/比例同留)
+  const durCell = document.querySelector('#vrow > div');
+  if (durCell) durCell.style.display = (mode === 'v2v') ? 'none' : '';
+  const durLbl = document.getElementById('durlabel');
+  if (durLbl) durLbl.textContent = c.durlabel || '时长（秒，可自己填，建议 2~10）';
+  const durEl = document.getElementById('dur');
+  durEl.disabled = !!c.durlock;
+  if (c.durlock) durEl.value = c.durlock;
+  if (c.durclear) durEl.value = '';   // AI改图: 留空让优化器按内容定时长(2026-10-26)
+  document.getElementById('gearcell').style.display = (c.gear === false) ? 'none' : '';
+  document.getElementById('irow').style.display = c.irow ? '' : 'none';
+  document.getElementById('engbox').style.display = (mode === 't2i') ? '' : 'none';
+  document.getElementById('erow').style.display = c.erow ? '' : 'none';
+  document.getElementById('gorow').style.display = (isFrame || isEnh || isVup) ? 'none' : '';
+  document.getElementById('lvbox').style.display = (c.vrow && !isFrame && !isEnh && !isVup) ? '' : 'none';
+  // 尺寸/比例类选项每次进模式都回到默认值, 不继承上个模式的手动选择
+  // (2026-10-23 用户拍板: 所有地方默认都该是"保持原图", 以后加新模式同样适用)
+  // "保持原图比例"只对要传图的模式有意义
+  const keepOpt = document.querySelector('#isize option[value="keep"]');
+  if (keepOpt) {
+    keepOpt.hidden = !c.upload;
+    const sel = document.getElementById('isize');
+    sel.value = c.upload ? 'keep' : '1:1';
+  }
+  const rsel = document.getElementById('ratio');
+  if (rsel) rsel.value = 'auto';
+  document.getElementById('prompt').placeholder = c.ph || '';
+  const tipEl = document.getElementById('tip');
+  tipEl.textContent = c.tip || '';
+  tipEl.style.display = c.tip ? '' : 'none';
+  clearBoard();  // 上个模式的分镜不带过来
+  // 顶栏同步: 模式名 + 清晰度 pill + 卡片淡入
+  const actTab = document.querySelector('.tab.active');
+  const tb = document.getElementById('tbmode');
+  if (actTab && tb) tb.textContent = actTab.textContent.trim();
+  const mpSel = document.getElementById('mp');
+  const mpPill = document.getElementById('pillmp');
+  if (mpSel && mpPill) mpPill.textContent = (mpSel.options[mpSel.selectedIndex].textContent || '').split('（')[0];
+  const card = document.querySelector('.cwork > .card');
+  if (card) { card.classList.remove('anim'); void card.offsetWidth; card.classList.add('anim'); }
+}
+// 清晰度切换 → 顶栏 pill 同步
+document.getElementById('mp').addEventListener('change', function () {
+  document.getElementById('pillmp').textContent = (this.options[this.selectedIndex].textContent || '').split('（')[0];
+});
+
+// 选项卡
+let loadedMode = null;  // 最后一次成功出片的模式(它的模型还驻留在显卡里)
+const NO_MODEL = { frame: 1, enh: 1, vup: 1, vrep: 1, mixcut: 1 };  // 截帧纯ffmpeg/清晰化走超分模型/视频超分走Real-ESRGAN/混剪是独立服务,不占H3,切换不用确认重载模型
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  if (busy) return;
+  if (!NO_MODEL[t.dataset.mode] && loadedMode && t.dataset.mode !== loadedMode &&
+      !confirm(`切到「${t.textContent.trim()}」要重新加载模型（约 1~3 分钟），确定切？\n不切换就点【取消】`)) return;
+  document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+  t.classList.add('active');
+  mode = t.dataset.mode;
+  applyMode();
+});
+applyMode();
+
+// 视频混剪：独立服务(8501) + 本地生图网关(8089)，本页只负责「检测 → 拉起 → 跳转」
+async function mixcutStatus() {
+  const el = document.getElementById('mixcutstatus');
+  try {
+    const j = await (await fetch('/mixcut_status')).json();
+    if (el) {
+      el.textContent = (j.mixcut ? '✅ 混剪服务 8501 已就绪' : '⚪ 混剪服务未启动')
+        + '　·　' + (j.gateway ? '✅ 生图网关 8089 已就绪' : '⚪ 生图网关未启动');
+      el.style.color = (j.mixcut && j.gateway) ? '#6ed4b1' : '#7d90a8';
+    }
+    return !!(j.mixcut && j.gateway);
+  } catch (e) {
+    if (el) { el.textContent = '服务状态读取失败：' + e.message; el.style.color = '#f48d7f'; }
+    return false;
+  }
+}
+
+document.getElementById('mixcutgo').onclick = async () => {
+  const btn = document.getElementById('mixcutgo');
+  const el = document.getElementById('mixcutstatus');
+  // 先同步开窗占位，等异步检测完再跳转，否则会被浏览器当弹窗拦掉
+  const win = window.open('', '_blank');
+  if (win) {
+    try {
+      win.document.write('<title>启动中…</title><body style="font-family:system-ui;padding:48px;color:#888">正在启动视频混剪，请稍候…</body>');
+    } catch (e) {}
+  }
+  btn.disabled = true;
+  let ready = await mixcutStatus();
+  if (!ready) {
+    btn.textContent = '⏳ 启动中…';
+    try { await fetch('/mixcut_launch'); } catch (e) {}
+    for (let i = 0; i < 45; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+      if (await mixcutStatus()) { ready = true; break; }
+    }
+    btn.textContent = '▶ 启动并打开视频混剪';
+  }
+  btn.disabled = false;
+  if (ready) {
+    if (win) win.location.href = 'http://127.0.0.1:8501';
+    else window.open('http://127.0.0.1:8501', '_blank');
+  } else {
+    if (win) win.close();
+    if (el) {
+      el.textContent = '⚠️ 90 秒内没起来。看面板目录下的 mixcut_panel.log，或重启该服务';
+      el.style.color = '#f48d7f';
+    }
+  }
+};
+// 出片档位分段控件: 白底高亮的就是当前档, 不用再猜"勾没勾"
+const modeseg = document.getElementById('modeseg');
+function curQuality() { const el = modeseg.querySelector('.segopt.on'); return el ? el.dataset.q : 'turbo'; }
+function setQuality(q) {
+  modeseg.querySelectorAll('.segopt').forEach(x => x.classList.toggle('on', x.dataset.q === q));
+}
+modeseg.querySelectorAll('.segopt').forEach(el => el.onclick = () => { setQuality(el.dataset.q); saveDraft(); });
+
+// 图片上传(主图框:单张;辅助参考框:r2v 专用,最多 3 张)
+const drop = document.getElementById('drop'), file = document.getElementById('file');
+const refdrop = document.getElementById('refdrop'), reffile = document.getElementById('reffile');
+drop.onclick = () => file.click();
+drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+drop.ondragleave = () => drop.classList.remove('over');
+drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); handleFiles(e.dataTransfer.files); };
+file.onchange = () => handleFiles(file.files);
+refdrop.onclick = () => reffile.click();
+refdrop.ondragover = e => { e.preventDefault(); refdrop.classList.add('over'); };
+refdrop.ondragleave = () => refdrop.classList.remove('over');
+refdrop.ondrop = e => { e.preventDefault(); refdrop.classList.remove('over'); handleRefFiles(e.dataTransfer.files); };
+reffile.onchange = () => handleRefFiles(reffile.files);
+
+function handleFiles(files) {
+  const arr = [...files].filter(f => f.type.startsWith('image/'));
+  if (arr.length) upload(arr[0]);
+}
+
+function handleRefFiles(files) {
+  const arr = [...files].filter(f => f.type.startsWith('image/'));
+  if (!arr.length) return;
+  const room = 3 - refNames.length;
+  if (room <= 0) { refdrop.firstChild.textContent = '最多 3 张辅助参考'; return; }
+  arr.slice(0, room).forEach(f => uploadRef(f));
+}
+
+async function upload(f) {
+  drop.firstChild.textContent = '上传中…';
+  const fd = new FormData(); fd.append('image', f);
+  const r = await fetch('/upload/image', { method: 'POST', body: fd });
+  const j = await r.json();
+  imgName = j.name; imgRatio = null;
+  refNames = [];                                   // 换主图后旧的辅助参考作废(防换人)
+  document.getElementById('refprev').innerHTML = '';
+  refdrop.firstChild.textContent = '点击追加参考照片，可一次多选';
+  drop.firstChild.textContent = '✅ 主图：' + f.name + '（点击可更换）';
+  document.getElementById('prev').innerHTML = '';
+  const img = document.createElement('img');
+  img.onload = () => { imgRatio = img.naturalWidth / img.naturalHeight; };
+  img.src = '/view?filename=' + encodeURIComponent(j.name) + '&type=input';
+  document.getElementById('prev').appendChild(img);
+  markFfSel('');
+  saveDraft();
+  loadFirstFrames();          // 首帧大卡同步为刚上传的图
+}
+
+// 首帧区(2026-10-12 用户拍板"只显示一张当前首帧"):
+// 大卡=当前生效首帧, 自动跟随 imgName(自己上传的或库图都一样); 下方小缩略图=首帧库备选, 点谁谁上卡。
+function imgViewUrl(name) {
+  if (name.indexOf('首帧库/') === 0)
+    return '/view?filename=' + encodeURIComponent(name.slice(4)) + '&subfolder=' + encodeURIComponent('首帧库') + '&type=input';
+  return '/view?filename=' + encodeURIComponent(name) + '&type=input';
+}
+async function loadFirstFrames() {
+  const row = document.getElementById('ffrow');
+  const cur = document.getElementById('ffcur');
+  const strip = document.getElementById('ffstrip');
+  cur.innerHTML = '';
+  if (imgName) {
+    const im = document.createElement('img');
+    im.src = imgViewUrl(imgName);
+    im.title = '当前首帧: ' + imgName;
+    cur.appendChild(im);
+  } else {
+    const em = document.createElement('span');
+    em.className = 'empty';
+    em.textContent = '还没设首帧：上传图片，或点下面库图';
+    cur.appendChild(em);
+  }
+  try {
+    const j = await (await fetch('/first_frames')).json();
+    const items = (j && j.items) || [];
+    strip.innerHTML = '';
+    for (const fn of items) {
+      const im = document.createElement('img');
+      im.title = '首帧库: ' + fn;
+      im.dataset.k = '首帧库/' + fn;
+      im.src = imgViewUrl('首帧库/' + fn);
+      im.onclick = () => pickFirstFrame('首帧库/' + fn);
+      strip.appendChild(im);
+    }
+    markFfSel(imgName || '');
+  } catch (e) {}
+}
+function markFfSel(cur) {
+  document.querySelectorAll('#ffstrip img').forEach(im => {
+    im.classList.toggle('sel', cur !== '' && cur === im.dataset.k);
+  });
+}
+function pickFirstFrame(key) {
+  imgName = key; imgRatio = null;
+  refNames = [];                                   // 换主图后旧的辅助参考作废(防换人)
+  document.getElementById('refprev').innerHTML = '';
+  refdrop.firstChild.textContent = '点击追加参考照片，可一次多选';
+  drop.firstChild.textContent = '✅ 主图：' + key + '（点击可更换）';
+  document.getElementById('prev').innerHTML = '';
+  const img = document.createElement('img');
+  img.onload = () => { imgRatio = img.naturalWidth / img.naturalHeight; };
+  img.src = imgViewUrl(key);
+  document.getElementById('prev').appendChild(img);
+  loadFirstFrames();         // 大卡与库高亮同步
+  saveDraft();
+}
+
+async function uploadRef(f) {
+  refdrop.firstChild.textContent = '上传中…';
+  const fd = new FormData(); fd.append('image', f);
+  const r = await fetch('/upload/image', { method: 'POST', body: fd });
+  const j = await r.json();
+  refNames.push(j.name);
+  refdrop.firstChild.textContent = `✅ 已加 ${refNames.length} 张辅助参考（点击可追加，最多 3 张）`;
+  const img = document.createElement('img');
+  img.src = '/view?filename=' + encodeURIComponent(j.name) + '&type=input';
+  document.getElementById('refprev').appendChild(img);
+  saveDraft();
+}
+
+// 🎞️ 视频截帧: 上传或从最近成片选一段视频, 服务端 ffmpeg 提最后一帧(不占显卡,秒级)
+let frameSrc = null;  // {file: File} 或 {name: 成片文件名}
+let vextLastVid = null;  // 视频延续: 最新一段成片 {filename}
+let vextSegs = [];       // 视频延续: 累积段名(vext=源片+各段, v2v=各重绘段), 每出新段拼完整片展示
+let vextMoreOn = false;  // "再续一段"按钮是否已显示
+let vextErr = false;     // 本轮是否出错(出错不弹"再续")
+const vdrop = document.getElementById('vsrcdrop'), vfile = document.getElementById('vsrcfile');
+vdrop.onclick = () => vfile.click();
+vdrop.ondragover = e => { e.preventDefault(); vdrop.classList.add('over'); };
+vdrop.ondragleave = () => vdrop.classList.remove('over');
+vdrop.ondrop = e => { e.preventDefault(); vdrop.classList.remove('over'); pickVideoFile(e.dataTransfer.files); };
+vfile.onchange = () => pickVideoFile(vfile.files);
+
+function previewSrcVideo(url) {
+  document.getElementById('vsrcprev').innerHTML = '';
+  const v = document.createElement('video');
+  v.src = url; v.muted = true; v.loop = true; v.autoplay = true; v.playsInline = true;
+  document.getElementById('vsrcprev').appendChild(v);
+}
+
+function pickVideoFile(files) {
+  const f = [...files].find(f => f.type.startsWith('video/') || /\.(mp4|mov|webm|mkv|avi)$/i.test(f.name));
+  if (!f) { vdrop.firstChild.textContent = '这个文件看着不像视频，换个 mp4/mov 试试'; return; }
+  frameSrc = { file: f };
+  vextLastVid = null; vextSegs = [];   // 换源片: 续接链清零, 否则会用旧片尾帧
+  vdrop.firstChild.textContent = '✅ 视频：' + f.name + '（点击可更换）';
+  previewSrcVideo(URL.createObjectURL(f));
+}
+
+function pickRecentVideo(it) {
+  frameSrc = { name: it.name };
+  vextLastVid = null; vextSegs = [];   // 换源片: 续接链清零
+  vdrop.firstChild.textContent = '✅ 视频：' + it.name + '（点下方可换传别的）';
+  previewSrcVideo(`/view?filename=${encodeURIComponent(it.name)}&subfolder=video&type=output`);
+}
+
+document.getElementById('framego').onclick = async () => {
+  const err = document.getElementById('err');
+  err.style.display = 'none';
+  if (!frameSrc) { err.textContent = '先传一段视频'; err.style.display = 'block'; return; }
+  const btn = document.getElementById('framego');
+  btn.disabled = true; btn.textContent = '提取中…';
+  document.getElementById('frameprog').style.display = 'block';
+  document.getElementById('frameresult').style.display = 'none';
+  try {
+    let r;
+    if (frameSrc.name) {
+      r = await fetch('/lastframe', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                      body: JSON.stringify({ name: frameSrc.name }) });
+    } else {
+      r = await fetch('/lastframe?f=' + encodeURIComponent(frameSrc.file.name), { method: 'POST', body: frameSrc.file });
+    }
+    const j = await r.json();
+    if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
+    const src = '/view?filename=' + encodeURIComponent(j.name) + '&subfolder=image&type=output';
+    document.getElementById('frameimg').src = src;
+    document.getElementById('framedl').href = src;
+    document.getElementById('framename').textContent = '✅ 已存到图片库：' + j.name;
+    document.getElementById('frameresult').style.display = 'block';
+    document.getElementById('frameresult').scrollIntoView({ behavior: 'smooth' });
+    refreshRecent();
+  } catch (e) {
+    err.textContent = '提取失败：' + String(e.message || e);
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = '⏮ 提取最后一帧';
+    document.getElementById('frameprog').style.display = 'none';
+  }
+};
+
+// ✨ AI 优化描述（本地 qwen3.5:9b）
+const RATIO_MAP = { 'auto': 'auto', '16:9': '16:9 (Widescreen)', '4:3': '4:3 (Standard)',
+                    '1:1': '1:1 (Square)', '3:4': '3:4 (Portrait Standard)', '9:16': '9:16 (Portrait Widescreen)' };
+let lastOptText = '';
+
+function renderBoard(sb) {
+  const rows = (sb || []).map(s =>
+    `<tr><td class="sec" contenteditable="true">${s.sec || ''}</td>` +
+    `<td contenteditable="true">${s.visual || ''}</td>` +
+    `<td contenteditable="true">🔊 ${s.sound || ''}</td></tr>`).join('');
+  document.getElementById('board').innerHTML =
+    `<div class="btitle"><span>分镜脚本（格子可直接点击修改，改完点右侧重写）</span>` +
+    `<button class="optbtn" id="rewrite">🔄 按分镜重写描述</button></div><table>${rows}</table>`;
+  document.getElementById('board').style.display = rows ? 'block' : 'none';
+  document.getElementById('rewrite').onclick = rewriteByBoard;
+}
+
+function readBoard() {
+  return [...document.querySelectorAll('#board table tr')].map(tr => {
+    const tds = tr.querySelectorAll('td');
+    return { sec: tds[0].innerText.trim(), visual: tds[1].innerText.trim(),
+             sound: tds[2].innerText.replace(/^🔊\s*/, '').trim() };
+  });
+}
+
+// 分镜属于某一次描述: 换描述/换模式/提交生成后必须清掉, 否则下个视频会被旧运镜(推近/放大)污染
+function clearBoard() {
+  document.getElementById('board').innerHTML = '';
+  document.getElementById('board').style.display = 'none';
+}
+
+// i2v/i2e 已上传图 → base64(发给视觉模型"看着图"优化)
+async function getImgB64() {
+  if ((mode !== 'i2v' && mode !== 'i2e' && mode !== 'v2e') || !imgName) return null;
+  try {
+    const r = await fetch('/view?filename=' + encodeURIComponent(imgName) + '&type=input');
+    if (!r.ok) return null;
+    const blob = await r.blob();
+    // 视觉模型只交代人物长相/服装/场景, 长边 768 足够看清; 原图直传会让视觉编码器多花数倍时间
+    // (2026-10-23 实测: 1080x1440 原图 240s 超时, 768 缩图正常返回)
+    const bmp = await createImageBitmap(blob);
+    const MAXS = 768;
+    const scale = Math.min(1, MAXS / Math.max(bmp.width, bmp.height));
+    const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
+    const cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    cv.getContext('2d').drawImage(bmp, 0, 0, w, h);
+    if (bmp.close) bmp.close();
+    return cv.toDataURL('image/jpeg', 0.85).split(',')[1];
+  } catch (e) { return null; }
+}
+
+// 图改图给模型的是结构化改图指令, 这里显示模型给的中文回述, 方便用户核对该改的和该保的都写到了
+function showOptZh(zh) {
+  const el = document.getElementById('optzh');
+  if (!el) return;
+  if (zh) { el.textContent = '中文对照：' + zh; el.style.display = ''; }
+  else { el.textContent = ''; el.style.display = 'none'; }
+}
+
+// 显卡是否被视频生成占着(占满时本地小模型只能爬,提前打招呼)
+function fmtPrompt(p) {
+  if (!p) return p;
+  var s = p.indexOf('\n') >= 0 ? p
+        : p.replace(/(。+|[;；])(?=.)/g, '$1\n');                // 模型没分行时兜底: 每句独立成行
+  s = s.split('\n').map(function(line) {                          // 仍超长的行按分号再切(兼容半角;全角；)
+    return line.length > 120 ? line.replace(/([;；])(?=.)/g, '$1\n') : line;
+  }).join('\n');
+  return s.replace(/\n{2,}/g, '\n').replace(/^\n|\n$/g, '');
+}
+async function gpuBusy() {
+  try {
+    const q = await (await fetch('/api/queue')).json();
+    return (q.queue_running?.length || 0) + (q.queue_pending?.length || 0) > 0;
+  } catch (e) { return false; }
+}
+
+async function rewriteByBoard() {
+  const err = document.getElementById('err');
+  const btn = document.getElementById('rewrite');
+  err.style.display = 'none';
+  if (document.getElementById('board').style.display !== 'block') {
+    err.textContent = '分镜是旧视频的，已清空。重新点 ✨ AI 优化描述 出新分镜，再按分镜重写';
+    err.style.display = 'block';
+    return;
+  }
+  if (await gpuBusy() && !confirm('正在生成视频，显卡被占满——现在优化会卡好几分钟。建议等生成完再点。\n【确定】硬等  【取消】稍后再说')) return;
+  const cur = document.getElementById('prompt').value.trim();
+  btn.disabled = true; btn.textContent = '重写中…';
+  try {
+    const image = await getImgB64();
+    const r = await fetch('/optimize', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: cur, mode, storyboard: readBoard(),
+                             opt_model: document.getElementById('optmodel').value,
+                             dur: document.getElementById('dur').value, ratio: document.getElementById('ratio').value,
+                             mp: document.getElementById('mp').value,
+                             ...(image ? { image } : {}) }) });
+    const j = await r.json();
+    if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
+    document.getElementById('prompt').value = fmtPrompt(j.prompt);
+    showOptZh(j.prompt_zh);
+    lastOptText = cur;
+    if (j.duration) document.getElementById('dur').value = j.duration;
+    // 清晰度只认用户手选, AI 优化结果不碰（2026-10-13 用户拍板：点之前是什么就是什么）
+    renderBoard(j.storyboard);  // 用户手改版原样返回
+    renderAskHist(); syncAskRow();
+  } catch (e) {
+    err.textContent = '重写失败：' + String(e.message || e);
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = '🔄 按分镜重写描述';
+    saveDraft();
+  }
+}
+
+document.getElementById('tplbtn').onclick = () => {
+  const sk = skeletonFor(mode);
+  if (!sk) return;
+  const ta = document.getElementById('prompt');
+  ta.value = ta.value.trim() ? ta.value.trimEnd() + '\n\n' + sk : sk;
+  showOptZh('');
+  saveDraft();
+  ta.focus();
+};
+
+document.getElementById('opt').onclick = async () => {
+  const ta = document.getElementById('prompt');
+  const err = document.getElementById('err');
+  const btn = document.getElementById('opt');
+  err.style.display = 'none';
+  if (!ta.value.trim()) { err.textContent = '先写一句大白话创意，再点优化'; err.style.display = 'block'; return; }
+  if (await gpuBusy() && !confirm('正在生成视频，显卡被占满——现在优化会卡好几分钟。建议等生成完再点。\n【确定】硬等  【取消】稍后再说')) return;
+  btn.disabled = true; btn.textContent = (mode === 'i2v' || mode === 'v2e' || mode === 'r2v') && imgName ? 'AI 看图优化中…' : '优化中…';
+  optRunning = true;
+  try {
+    lastOptText = ta.value.trim();
+    const image = await getImgB64();
+    const r = await fetch('/optimize', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                         body: JSON.stringify({ text: lastOptText, mode,
+                                           opt_model: document.getElementById('optmodel').value,
+                                           dur: document.getElementById('dur').value, ratio: document.getElementById('ratio').value,
+                                           mp: document.getElementById('mp').value,
+                                           ...(image ? { image } : {}) }) });
+    const j = await r.json();
+    if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
+    refineHist = [];  // 全新优化=换创意, 旧反馈对话史作废
+    ta.value = fmtPrompt(j.prompt);
+    showOptZh(j.prompt_zh);
+    if (j.duration) document.getElementById('dur').value = j.duration;
+    // 清晰度只认用户手选, AI 优化结果不碰（2026-10-13 用户拍板：点之前是什么就是什么）
+    renderBoard(j.storyboard);
+    renderAskHist(); syncAskRow();
+  } catch (e) {
+    err.textContent = '优化失败：' + String(e.message || e);
+    err.style.display = 'block';
+  } finally {
+    optRunning = false;
+    btn.disabled = false; btn.textContent = '✨ AI 优化描述';
+    saveDraft();
+  }
+};
+
+// 图改图:按用户选的清晰度/比例,canvas 裁剪缩放后重新上传,返回实际用于生成的图名
+async function preprocessImage(mp, rk) {
+  const blob = await (await fetch('/view?filename=' + encodeURIComponent(imgName) + '&type=input')).then(r => r.blob());
+  const bmp = await createImageBitmap(blob);
+  let sw = bmp.width, sh = bmp.height, sx = 0, sy = 0;
+  if (rk !== 'keep') {                       // 居中最优裁剪到目标比例
+    const [rw, rh] = ISIZES[rk];
+    const r = rw / rh;
+    if (sw / sh > r) { const cw = Math.round(sh * r); sx = Math.round((sw - cw) / 2); sw = cw; }
+    else { const ch = Math.round(sw / r); sy = Math.round((sh - ch) / 2); sh = ch; }
+  }
+  let tw = sw, th = sh;
+  const P = mp > 0 ? mp * 1e6 : ((rk !== 'keep' && sw * sh > 1.2e6) ? 1e6 : 0);
+  if (P > 0) {                               // 缩放到目标总像素,16 对齐
+    const r = sw / sh;
+    tw = Math.max(16, Math.round(Math.sqrt(P * r) / 16) * 16);
+    th = Math.max(16, Math.round(Math.sqrt(P / r) / 16) * 16);
+  }
+  const cv = document.createElement('canvas'); cv.width = tw; cv.height = th;
+  cv.getContext('2d').drawImage(bmp, sx, sy, sw, sh, 0, 0, tw, th);
+  const out = await new Promise(res => cv.toBlob(res, 'image/png'));
+  const fd = new FormData(); fd.append('image', out, 'edit_' + Date.now() + '.png');
+  const j = await (await fetch('/upload/image', { method: 'POST', body: fd })).json();
+  return j.name;
+}
+
+// 图改图提示词保护:只改用户点名的部分,其余(脸/衣服/背景)强制保持原图
+function wrapEditPrompt(desc) {
+  return desc.replace(/。+$/, '') +
+    '。只执行上面要求的修改;除明确要求修改的部分外,人物的脸部、五官、脸型、肤色、表情、姿势、所穿服装、配饰、手持物、背景与构图全部严格保持与原图一致,不得改动或重绘。';
+}
+
+// 参考生视频提示词契约: Picture 1(主图)=场景+人物基准, 其余辅助图=加宽锁脸; 防人脸跑偏
+function buildRefPrompt(desc, n) {
+  const allPics = Array.from({ length: n }, (_, i) => `<Picture ${i + 1}>`);
+  const aux = n > 1 ? `, with additional face references ${allPics.slice(1).join(', ')} (the same person)` : '';
+  return 'subject_definitions:\n' +
+    `<Subject 1> is the person in <Picture 1>${aux}; their face, hair and clothing follow ${allPics.join(', ')}. ` +
+    'The scene, background, outfit, lighting and camera setting follow <Picture 1>.\n\n' +
+    'summary:\n[reference generation] one continuous shot of <Subject 1> in the same place as <Picture 1>: ' + desc;
+}
+
+// 按当前界面拼工作流(每次调用都是全新随机种子 → 连抽 N 条互不重复)
+// over: 长视频分段模式覆盖项 {desc, dur, imgName, mode}, 缺省读界面当前值
+async function buildOut(over = {}) {
+  const m = over.mode || mode;
+  const desc = over.desc !== undefined ? over.desc : document.getElementById('prompt').value.trim();
+  let useImgName = over.imgName !== undefined ? over.imgName : imgName;
+  if (m === 'i2e') {
+    const emp = parseFloat(document.getElementById('emp').value);
+    const erk = document.getElementById('eratio').value;
+    if (emp > 0 || erk !== 'keep') useImgName = await preprocessImage(emp, erk);
+  }
+
+  const tplKey = (m === 't2i' && document.getElementById('ieng') && document.getElementById('ieng').value !== 'z')
+    ? 't2i_q21' : (m === 'v2e' ? 'i2v' : m);
+  const out = JSON.parse(JSON.stringify(tpl[tplKey]));
+  const seed = Math.floor(Math.random() * 1e15);
+  if (m === 't2i' || m === 'i2e') {
+    // 图像类:填 prompt 占位、上传图名、种子
+    const usesUpload = m === 'i2e';
+    const finalDesc = m === 'i2e' ? wrapEditPrompt(desc) : desc;
+    for (const k of Object.keys(out)) {
+      const n = out[k], inp = n.inputs || {};
+      if (n.class_type === 'TextEncodeZImageOmni' || n.class_type === 'TextEncodeQwenImageEdit' || n.class_type === 'TextEncodeQwenImageEditPlus' || n.class_type === 'TextEncodeQwenImage21') {
+        if (inp.prompt === '[[PROMPT]]') inp.prompt = finalDesc;
+      }
+      if (n.class_type === 'TextEncodeQwenImage21' && String(inp.resolution).indexOf('[[') === 0) {
+        inp.resolution = document.getElementById('ieng').value === 'q2k' ? 2048 : 1024;
+      }
+      if (n.class_type === 'CLIPTextEncode') {
+        if (inp.text && inp.text.includes('[[PROMPT]]')) inp.text = inp.text.replace('[[PROMPT]]', finalDesc);
+      }
+      if (n.class_type === 'LoadImage' && usesUpload) inp.image = useImgName;
+      if (n.class_type === 'KSampler') inp.seed = seed;
+      if (n.class_type === 'EmptyLatentImage') {
+        let w, h;
+        const iv = document.getElementById('isize').value;
+        if (iv === 'keep' && imgRatio) {   // 跟上传照片比例,总像素约100万,64对齐
+          const P = 1024 * 1024, r = imgRatio;
+          w = Math.max(64, Math.round(Math.sqrt(P * r) / 64) * 64);
+          h = Math.max(64, Math.round(Math.sqrt(P / r) / 64) * 64);
+        } else {
+          [w, h] = ISIZES[iv] || ISIZES['1:1'];
+        }
+        if (m === 't2i' && document.getElementById('ieng') && document.getElementById('ieng').value === 'q2k') { w *= 2; h *= 2; }
+        inp.width = w; inp.height = h;
+      }
+    }
+  } else {
+    // 视频类
+    let dur = over.dur !== undefined ? parseFloat(over.dur) : (parseFloat(document.getElementById('dur').value) || 5);
+    dur = Math.min(15, Math.max(1, dur));
+    // AI改图不再锁 2 秒(2026-10-26): 时长由优化器按内容定(5~8 秒), 输入框留空即用 AI 的值
+    const mp = parseFloat(document.getElementById('mp').value);
+    let ratio = document.getElementById('ratio').value;
+    if (ratio === 'auto') ratio = ((m === 'i2v' || m === 'v2e' || m === 'r2v') && imgRatio) ? nearestRatio(imgRatio) : '16:9 (Widescreen)';
+    if (over.ratio) ratio = over.ratio;   // vext/v2v: 源片比例强制覆盖, 延续段跟源片同尺寸防变形
+    for (const k of Object.keys(out)) {
+      const n = out[k], inp = n.inputs || {};
+      if (n.class_type === 'MiniMaxH3ImageToVideo' || n.class_type === 'MiniMaxH3TextToVideo') inp.prompt = desc;
+      if (n.class_type === 'MiniMaxH3ReferenceToVideo') inp.prompt = buildRefPrompt(desc, refNames.length);
+      if (n.class_type === 'PrimitiveFloat') inp.value = dur;
+      if (n.class_type === 'PrimitiveBoolean') inp.value = curQuality() === 'turbo';
+      if (n.class_type === 'ResolutionSelector') { inp.megapixels = mp; inp.aspect_ratio = ratio; }
+      if (n.class_type === 'RandomNoise') inp.noise_seed = seed;
+      if (n.class_type === 'LoadImage' && (m === 'i2v' || m === 'v2e')) inp.image = useImgName;
+    }
+    if (m === 'r2v') {
+      // 主图=Picture 1 场景基准, 辅助参考随后; 用几张留几个槽, 多余的槽和 LoadImage 整删
+      const rv = Object.values(out).find(n => n.class_type === 'MiniMaxH3ReferenceToVideo');
+      const all = [useImgName, ...refNames];
+      for (let i = 0; i < 4; i++) {
+        const key = `ref_images.ref_image_${i}`;
+        if (i < all.length && rv.inputs[key]) {
+          out['REF:' + i].inputs.image = all[i];
+        } else {
+          delete rv.inputs[key];
+          delete out['REF:' + i];
+        }
+      }
+    }
+  }
+  return out;
+}
+
+// 提交
+document.getElementById('go').onclick = async () => {
+  if (mode === 'vext' || mode === 'v2v') return;   // 这两个模式走下方专属监听, 别抢
+  const desc = document.getElementById('prompt').value.trim();
+  const err = document.getElementById('err');
+  err.style.display = 'none';
+  if (optRunning) { err.textContent = 'AI 优化正在跑，等它写完再生成（两边抢显卡会两败俱伤）'; err.style.display = 'block'; return; }
+  if (!desc) { err.textContent = '先写点描述吧'; err.style.display = 'block'; return; }
+  if ((mode === 'i2v' || mode === 'v2e' || mode === 'r2v') && !imgName) { err.textContent = mode === 'r2v' ? '先上传主图（场景基准照片，1 张）' : '这个模式需要先上传一张图片'; err.style.display = 'block'; return; }
+  const preKey = (mode === 't2i' && document.getElementById('ieng') && document.getElementById('ieng').value !== 'z') ? 't2i_q21' : (mode === 'v2e' ? 'i2v' : mode);
+  if (!tpl[preKey]) { err.textContent = '模板还没加载完，稍等一秒再点'; err.style.display = 'block'; return; }
+  const takes = Math.min(4, Math.max(1, parseInt(document.getElementById('takes').value) || 1));
+
+  busy = true;
+  const go = document.getElementById('go');
+  go.disabled = true; go.textContent = takes > 1 ? `连抽 ${takes} 条排队中…` : '生成中…';
+  const pb = document.getElementById('pillbusy');
+  if (pb) { pb.textContent = takes > 1 ? `连抽 ${takes} 条中` : '生成中…'; pb.classList.add('green'); }
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('prog').style.display = 'block';
+  const t0 = Date.now();
+  let lp = null; // 最近一次 /progress 真实进度
+  let doneCount = 0; // 连抽时已出片条数
+  const fmtT = s => `${Math.floor(s/60)} 分 ${s%60} 秒`;
+  const bar = document.querySelector('.bar'), fill = bar.querySelector('i');
+  const ptext = document.getElementById('ptext');
+  bar.classList.add('indet'); fill.style.width = '0%';
+  const tk = () => takes > 1 ? `已出片 ${doneCount}/${takes} · ` : '';
+  const progPoll = setInterval(async () => {
+    try {
+      const j = await (await fetch('/progress')).json();
+      if (j && j.value != null) lp = j;
+    } catch (e) {}
+  }, 3000);
+  const timer = setInterval(() => {
+    const s = Math.floor((Date.now() - t0) / 1000);
+    if (lp && lp.value >= lp.max) {
+      bar.classList.remove('indet'); fill.style.width = '100%';
+      const finRef = lp.fin_eta ? Math.round(lp.fin_eta / 60) : null;
+      const slow = finRef && s > lp.fin_eta * 1.8 ? ' · 收尾偏慢：可能有并行任务在抢显卡' : '';
+      ptext.textContent = `${tk()}收尾中（解码保存）… 已用 ${fmtT(s)}${finRef ? ` · 参考还需约 ${finRef} 分钟` : ''}${slow}`;
+    } else if (lp) {
+      bar.classList.remove('indet');
+      fill.style.width = (lp.value / lp.max * 100).toFixed(1) + '%';
+      ptext.textContent = `${tk()}采样 ${lp.value}/${lp.max} · 已用 ${fmtT(s)} · 预计剩余 ${lp.eta}`;
+    } else {
+      const hint = MODES[mode].loadEta ? ` · ${MODES[mode].loadEta}` : '';
+      ptext.textContent = `${tk()}加载模型中… 已用 ${fmtT(s)}${hint}（莫慌，显卡在全力跑）`;
+    }
+  }, 1000);
+
+  try {
+    // 连抽 N 条: 各带独立随机种子, 一次性排队, 逐条出片
+    const pids = [];
+    for (let i = 0; i < takes; i++) {
+      const out = await buildOut();
+      const r = await fetch('/api/prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                             body: JSON.stringify({ prompt: out }) });
+      const j = await r.json();
+      if (!r.ok || j.error) throw new Error(JSON.stringify(j.error || j, null, 1).slice(0, 600));
+      pids.push(j.prompt_id);
+      if (i === 0) { clearBoard(); loadedMode = mode; }  // 分镜已随这次描述消耗; 模型从此驻留
+    }
+
+    // 轮询结果(连抽时一条条出, 全出完统一展示最后一条, 其余在 output 目录)
+    const doneSet = new Set();
+    let lastVid = null;
+    while (doneSet.size < pids.length) {
+      await new Promise(res => setTimeout(res, 4000));
+      for (const pid of pids) {
+        if (doneSet.has(pid)) continue;
+        const h = await fetchJsonRetry('/api/history/' + pid);
+        if (!h[pid]) continue;
+        const st = h[pid].status || {};
+        if (st.status_str === 'error') {
+          const msgs = (st.messages || []).filter(m => m[0] === 'execution_error')
+            .map(m => m[1].exception_message).join('\n');
+          throw new Error(msgs || '生成失败（可能是显存不足，改"流畅"清晰度或 3 秒再试）');
+        }
+        if (st.completed) {
+          const outs = h[pid].outputs || {};
+          let vid = null;
+          for (const k of Object.keys(outs)) {
+            const v = outs[k].video || outs[k].gifs || outs[k].images;
+            if (v && v[0]) { vid = v[0]; break; }
+          }
+          if (!vid) throw new Error('任务完成但没找到输出文件');
+          doneSet.add(pid);
+          lastVid = vid;
+        }
+      }
+      doneCount = doneSet.size;
+    }
+    if (lastVid) {
+      const src = `/view?filename=${encodeURIComponent(lastVid.filename)}&subfolder=${encodeURIComponent(lastVid.subfolder||'')}&type=${lastVid.type||'output'}`;
+      const isImg = mode === 't2i' || mode === 'i2e';
+      document.getElementById('vid').style.display = isImg ? 'none' : '';
+      document.getElementById('rimg').style.display = isImg ? '' : 'none';
+      if (isImg) document.getElementById('rimg').src = src;
+      else document.getElementById('vid').src = src;
+      document.getElementById('rdl').href = src;
+      document.getElementById('rname').textContent = takes > 1
+        ? `${lastVid.filename}（共出片 ${takes} 条，都在 output 目录里）` : lastVid.filename;
+      document.getElementById('result').style.display = 'block';
+      document.getElementById('result').classList.remove('pop'); void document.getElementById('result').offsetWidth;
+      document.getElementById('result').classList.add('pop');
+      document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+      if (mode === 'v2e') {
+        // AI改图: 按每秒 8 张抽帧(24fps 每 3 帧 1 张)给用户挑
+        try {
+          const fr = await (await fetch('/frames', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: lastVid.filename }) })).json();
+          if (fr.frames && fr.frames.length) {
+            const grid = document.getElementById('v2egrid');
+            const cols = fr.frames.length > 8 ? 'repeat(6,1fr)' : 'repeat(4,1fr)';
+            grid.style.gridTemplateColumns = cols;
+            grid.innerHTML = fr.frames.map(f => {
+              const s = `/view?filename=${encodeURIComponent(f.name)}&subfolder=image&type=output`;
+              const tag = f.frame === 0 ? '原图' : (f.frame < 24 ? `第${f.frame}帧·过渡` : `第${f.frame}帧`);
+              return `<div style="text-align:center"><a href="${s}" download="${f.name}"><img src="${s}" style="width:100%;border-radius:6px;border:1px solid #2a3b51"></a>` +
+                     `<div style="font-size:11px;color:#7d90a8;margin-top:2px">${tag} · 点图下载</div></div>`;
+            }).join('');
+            grid.style.display = 'grid';
+            document.getElementById('vid').style.display = 'none';
+            document.getElementById('rname').textContent = `🪄 ${fr.frames.length} 帧全部抽好已存进图片库（output\\image\\），第 0 帧是原图对照，前几张标「过渡」的是换装过程中的帧，点任意图下载`;
+          }
+        } catch (e) { /* 截帧失败不阻塞, 视频本身已在最近成片里 */ }
+      }
+    }
+  } catch (e) {
+    err.textContent = String(e.message || e);
+    err.style.display = 'block';
+  } finally {
+    clearInterval(timer);
+    clearInterval(progPoll);
+    document.getElementById('prog').style.display = 'none';
+    go.disabled = false; go.textContent = '生 成';
+    busy = false;
+    if (pb) { pb.textContent = '空闲'; pb.classList.remove('green'); }
+  }
+};
+
+// ==================== 长视频模式(2026-10-13): 任意总时长 = N段(<=15s) 尾帧续接 + 无损拼接 ====================
+const lvenEl = document.getElementById('lven');
+lvenEl.onchange = () => {
+  document.getElementById('lvctl').style.display = lvenEl.checked ? '' : 'none';
+};
+let lvSegs = [];   // 当前分镜 [{duration, has_person, prompt, note}]
+
+function renderLvSegs() {
+  const box = document.getElementById('lvsegs');
+  const runBtn = document.getElementById('lvrun');
+  if (!lvSegs.length) { box.innerHTML = ''; runBtn.style.display = 'none'; return; }
+  box.innerHTML = lvSegs.map((s, i) => {
+    const src = i === 0 ? (mode === 'i2v' ? '首帧=你上传的图' : mode === 'r2v' ? '首帧=主参考照' : '首帧由 AI 按描述生成')
+                        : `首帧=第 ${i} 段尾帧`;
+    const p = String(s.prompt).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+    return `<div style="border:1px solid #2a3b51;border-radius:10px;padding:10px 12px;margin-top:8px;background:#fff">
+      <div style="display:flex;gap:10px;align-items:center;font-size:12px;color:#a9b7c9;flex-wrap:wrap">
+        <b style="color:#c8d3e2">第 ${i + 1} 段</b>
+        <span><input type="number" class="lvdur" value="${s.duration}" min="5" max="15" step="1"
+               style="width:60px;border:1px solid #2a3b51;border-radius:8px;padding:4px 6px;font-size:13px"> 秒</span>
+        <span style="margin-left:auto">${src}${s.note ? ' · ' + String(s.note).replace(/</g, '&lt;') : ''}</span>
+      </div>
+      <textarea class="lvprompt" rows="3"
+        style="width:100%;margin-top:8px;border:1px solid #2a3b51;border-radius:8px;padding:8px 10px;font-size:13px;line-height:1.6;box-sizing:border-box;resize:vertical">${p}</textarea>
+    </div>`;
+  }).join('');
+  const totalSec = lvSegs.reduce((a, s) => a + Number(s.duration), 0);
+  runBtn.style.display = '';
+  runBtn.textContent = `▶ 开始连跑（${lvSegs.length} 段 · 共 ${totalSec} 秒）`;
+}
+
+document.getElementById('lvplan').onclick = async () => {
+  const err = document.getElementById('err');
+  err.style.display = 'none';
+  const text = document.getElementById('prompt').value.trim();
+  const total = parseInt(document.getElementById('lvsec').value) || 0;
+  if (!text) { err.textContent = '先在上方写视频描述，AI 按描述拆段'; err.style.display = 'block'; return; }
+  if (total < 16 || total > 600) { err.textContent = '总时长 16~600 秒'; err.style.display = 'block'; return; }
+  if (optRunning) { err.textContent = 'AI 优化正在跑，等它写完再拆段'; err.style.display = 'block'; return; }
+  const btn = document.getElementById('lvplan');
+  btn.disabled = true; btn.textContent = '⏳ 拆段中（本地 9B 模型，约 20~40 秒）…';
+  document.getElementById('lvstat').textContent = '';
+  try {
+    const r = await fetch('/storyboard', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                           body: JSON.stringify({ text, total, mode }) });
+    const j = await r.json();
+    if (!r.ok || j.error) throw new Error(j.error || '拆段失败');
+    lvSegs = j.segs;
+    renderLvSegs();
+    if (j.leftover) document.getElementById('lvstat').textContent = `⚠️ 时长归一后还差 ${j.leftover}s 没分进去，可手动改某段时长补上`;
+  } catch (e) {
+    err.textContent = String(e.message || e);
+    err.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = '📋 AI 拆段·生成分镜';
+  }
+};
+
+// 轮询用 JSON 拉取, 网络抖动(面板重启/瞬断)自动重试, 重试耗尽才抛错 (2026-10-13: 单次 poll 失败曾直接判死整单)
+async function fetchJsonRetry(url, tries = 45, gapMs = 4000) {
+  let lastErr = null;
+  for (let i = 0; i < tries; i++) {
+    try {
+      const r = await fetch(url);
+      return await r.json();
+    } catch (e) {
+      lastErr = e;
+      const pt = document.getElementById('ptext');
+      if (pt) pt.textContent = `连接抖了一下（${e.message || e}），重连中…（不影响生成，显卡还在跑）`;
+      await new Promise(res => setTimeout(res, gapMs));
+    }
+  }
+  throw lastErr || new Error('连接失败');
+}
+
+// 轮询单段 history 直到完成/报错, 返回成片 {filename, subfolder, type}
+async function lvWaitSeg(pid) {
+  const t0 = Date.now();
+  while (true) {
+    await new Promise(res => setTimeout(res, 4000));
+    const h = await fetchJsonRetry('/api/history/' + pid);
+    if (!h[pid]) continue;
+    const st = h[pid].status || {};
+    if (st.status_str === 'error') {
+      const msgs = (st.messages || []).filter(m => m[0] === 'execution_error')
+        .map(m => m[1].exception_message).join('\n');
+      throw new Error(msgs || '生成失败（可能是显存不足，改"流畅"清晰度或缩短段时长再试）');
+    }
+    if (st.completed) {
+      const outs = h[pid].outputs || {};
+      for (const k of Object.keys(outs)) {
+        const v = outs[k].video || outs[k].gifs || outs[k].images;
+        if (v && v[0] && v[0].filename) return v[0];
+      }
+      throw new Error('任务完成但没找到输出文件');
+    }
+    if (Date.now() - t0 > 3 * 3600 * 1000) throw new Error('该段超时(3小时)');
+  }
+}
+
+document.getElementById('lvrun').onclick = async () => {
+  const err = document.getElementById('err');
+  err.style.display = 'none';
+  // 收集可编辑分镜(表格里改过的以界面值为准)
+  lvSegs = [...document.querySelectorAll('#lvsegs > div')].map((div, i) => ({
+    duration: parseInt(div.querySelector('.lvdur').value) || (lvSegs[i] && lvSegs[i].duration) || 10,
+    prompt: div.querySelector('.lvprompt').value.trim(),
+    note: lvSegs[i] ? lvSegs[i].note : '',
+    has_person: lvSegs[i] ? lvSegs[i].has_person : false,
+  }));
+  if (!lvSegs.length || lvSegs.some(s => !s.prompt)) { err.textContent = '每段提示词都不能为空'; err.style.display = 'block'; return; }
+  for (const s of lvSegs) {
+    if (!(s.duration >= 5 && s.duration <= 15)) { err.textContent = '每段时长 5~15 秒'; err.style.display = 'block'; return; }
+  }
+  if ((mode === 'i2v' || mode === 'r2v') && !imgName) { err.textContent = mode === 'r2v' ? '先上传主图' : '这个模式需要先上传一张图片'; err.style.display = 'block'; return; }
+  if (busy || optRunning) { err.textContent = '有任务在跑，等它结束再连跑'; err.style.display = 'block'; return; }
+  if (!tpl['i2v'] || !tpl[mode]) { err.textContent = '模板还没加载完，稍等一秒再点'; err.style.display = 'block'; return; }
+
+  busy = true;
+  const lvrun = document.getElementById('lvrun'), go = document.getElementById('go');
+  lvrun.disabled = true; go.disabled = true;
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('prog').style.display = 'block';
+  const N = lvSegs.length;
+  const t0 = Date.now();
+  let lp = null;
+  let segIdx = 0;   // 1-based 当前段(显示用)
+  const fmtT = s => `${Math.floor(s/60)} 分 ${s%60} 秒`;
+  const bar = document.querySelector('.bar'), fill = bar.querySelector('i');
+  const ptext = document.getElementById('ptext');
+  bar.classList.add('indet'); fill.style.width = '0%';
+  const progPoll = setInterval(async () => {
+    try {
+      const j = await (await fetch('/progress')).json();
+      if (j && j.value != null) lp = j;
+    } catch (e) {}
+  }, 3000);
+  const timer = setInterval(() => {
+    const s = Math.floor((Date.now() - t0) / 1000);
+    const tag = `第 ${segIdx}/${N} 段 · `;
+    if (lp && lp.value >= lp.max) {
+      bar.classList.remove('indet'); fill.style.width = '100%';
+      const finRef = lp.fin_eta ? Math.round(lp.fin_eta / 60) : null;
+      ptext.textContent = `${tag}收尾中（解码保存）… 全程已用 ${fmtT(s)}${finRef ? ` · 参考还需约 ${finRef} 分钟` : ''}`;
+    } else if (lp) {
+      bar.classList.remove('indet');
+      fill.style.width = (lp.value / lp.max * 100).toFixed(1) + '%';
+      ptext.textContent = `${tag}采样 ${lp.value}/${lp.max} · 全程已用 ${fmtT(s)} · 预计剩余 ${lp.eta}`;
+    } else {
+      ptext.textContent = `${tag}加载模型中… 全程已用 ${fmtT(s)}（莫慌，显卡在全力跑）`;
+    }
+  }, 1000);
+
+  const segVids = [];   // 各段成片 {filename}
+  try {
+    for (let k = 0; k < N; k++) {
+      segIdx = k + 1;
+      lp = null;   // 新段进度从 0 涨, 旧的别残留
+      const seg = lvSegs[k];
+      const segMode = k === 0 ? mode : 'i2v';   // 段1用当前模式, 段2+一律 i2v 尾帧续接
+      let segImg = imgName;
+      if (k > 0) {
+        ptext.textContent = `第 ${segIdx}/${N} 段 · 提取上段尾帧…`;
+        const tf = await (await fetch('/tail_frame?file=' + encodeURIComponent(segVids[k - 1].filename))).json();
+        if (!tf.name) throw new Error(tf.error || '尾帧提取失败');
+        segImg = tf.name;   // input/longvideo/tail_xxx.jpg, LoadImage 按 子目录/文件名 读
+      }
+      const out = await buildOut({ desc: seg.prompt, dur: seg.duration, imgName: segImg, mode: segMode });
+      const r = await fetch('/api/prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                             body: JSON.stringify({ prompt: out }) });
+      const j = await r.json();
+      if (!r.ok || j.error) throw new Error(JSON.stringify(j.error || j, null, 1).slice(0, 600));
+      const vid = await lvWaitSeg(j.prompt_id);
+      segVids.push(vid);
+      if (k === 0) { clearBoard(); loadedMode = segMode; }
+    }
+    ptext.textContent = `全部 ${N} 段完成 · 拼接中…`;
+    const cr = await (await fetch('/concat', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                               body: JSON.stringify({ files: segVids.map(v => v.filename) }) })).json();
+    if (!cr.name) throw new Error((cr.error || '拼接失败') + '（各段成片都在 output 目录里，可手动挑）');
+    const src = `/view?filename=${encodeURIComponent(cr.name)}&subfolder=video&type=output`;
+    document.getElementById('vid').style.display = '';
+    document.getElementById('rimg').style.display = 'none';
+    document.getElementById('vid').src = src;
+    document.getElementById('rdl').href = src;
+    document.getElementById('rname').textContent = `${cr.name}（${N} 段拼接 · ${cr.size_mb}MB · 各分段单条也在 output 目录里）`;
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+    lvSegs = [];
+    document.getElementById('lvsegs').innerHTML = '';
+    document.getElementById('lvstat').textContent = '';
+    lvrun.style.display = 'none';
+  } catch (e) {
+    err.textContent = `第 ${segIdx}/${N} 段出错：${String(e.message || e)}（前面已出的 ${segVids.length} 段在 output 目录里不丢）`;
+    err.style.display = 'block';
+  } finally {
+    clearInterval(timer);
+    clearInterval(progPoll);
+    document.getElementById('prog').style.display = 'none';
+    lvrun.disabled = false; go.disabled = false;
+    busy = false;
+    refreshRecent();
+  }
+};
+// ==================== 视频超分(2026-10-13): 任意视频 -> 长边1920保源比例 ====================
+document.getElementById('vupgo').onclick = async () => {
+  const err = document.getElementById('err');
+  err.style.display = 'none';
+  if (!frameSrc) { err.textContent = '先传一段视频'; err.style.display = 'block'; return; }
+  if (UPSCALE_BUSY) { err.textContent = '有超分任务在跑，等它结束'; err.style.display = 'block'; return; }
+  UPSCALE_BUSY = true;
+  const btn = document.getElementById('vupgo');
+  btn.disabled = true; btn.textContent = '超分中…';
+  document.getElementById('vupresult').style.display = 'none';
+  document.getElementById('vupprog').style.display = 'block';
+  document.getElementById('vuptext').textContent = '上传 + 超分中…';
+  const timer = setInterval(async () => {
+    try {
+      const j = await (await fetch('/upscale_progress')).json();
+      if (j && j.running) {
+        document.getElementById('vuptext').textContent =
+          (j.phase === 'mux' ? '封装中…' : `超分中 ${j.frame}/${j.total || '?'} 帧`) + (j.name ? ` · ${j.name}` : '');
+      }
+    } catch (e) {}
+  }, 1500);
+  try {
+    let r;
+    if (frameSrc.name) {
+      // 走通用 video_upscale: 先按成片路径临时传名字(后端支持 output/video 名走 _video_real_path)
+      r = await fetch('/video_upscale?f=' + encodeURIComponent(frameSrc.name), { method: 'POST', body: new Blob([]) });
+    } else {
+      r = await fetch('/video_upscale?f=' + encodeURIComponent(frameSrc.file.name), { method: 'POST', body: frameSrc.file });
+    }
+    const j = await r.json();
+    if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
+    const src = `/view?filename=${encodeURIComponent(j.name)}&subfolder=video&type=output`;
+    document.getElementById('vupvid').src = src;
+    document.getElementById('vupdl').href = src;
+    document.getElementById('vupname').textContent = `✅ ${j.name}（${j.size_mb}MB · 长边1920保源比例）`;
+    document.getElementById('vupresult').style.display = 'block';
+    document.getElementById('vupresult').scrollIntoView({ behavior: 'smooth' });
+    refreshRecent();
+  } catch (e) {
+    err.textContent = String(e.message || e);
+    err.style.display = 'block';
+  } finally {
+    clearInterval(timer);
+    document.getElementById('vupprog').style.display = 'none';
+    btn.disabled = false; btn.textContent = '🔍 开始超分';
+    UPSCALE_BUSY = false;
+  }
+};
+
+// ==================== 视频延续(2026-10-13 改): 单段跑, 跑完弹"再续一段"无限续 ====================
+let UPSCALE_BUSY = false;
+// 用 addEventListener 而不是 onclick: 原生 go 处理器在上面已占 onclick, 再赋值会把它整个顶掉,
+// 导致图生视频/文生视频等所有其他模式点"生成"没反应(2026-10-13 用户实测踩坑)
+document.getElementById('go').addEventListener('click', async () => {
+  if (mode !== 'vext' && mode !== 'v2v') return;   // 其他模式走原生 go
+  const err = document.getElementById('err');
+  err.style.display = 'none';
+  vextErr = false;
+  const desc = document.getElementById('prompt').value.trim();
+  if (!desc) { err.textContent = mode === 'v2v' ? '先写想把视频改成什么样（新风格/新场景）' : '先写点描述吧——接下来想让视频怎么发展'; err.style.display = 'block'; return; }
+  if (busy) { err.textContent = '有任务在跑，等它结束再' + (mode === 'v2v' ? '改视频' : '延续'); err.style.display = 'block'; return; }
+  if (!tpl[mode]) { err.textContent = '模板还没加载完，稍等一秒再点'; err.style.display = 'block'; return; }
+  const segDur = Math.min(15, Math.max(1, parseInt(document.getElementById('dur').value) || 3));
+  busy = true;
+  const go = document.getElementById('go');
+  go.disabled = true; go.textContent = mode === 'v2v' ? '整片重绘中…' : `续 ${segDur} 秒中…`;
+  const pb = document.getElementById('pillbusy');
+  if (pb) { pb.textContent = mode === 'v2v' ? '整片重绘中…' : `续 ${segDur} 秒中…`; pb.classList.add('green'); }
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('prog').style.display = 'block';
+  document.getElementById('vextmore').style.display = 'none';
+  const t0 = Date.now();
+  let lp = null;
+  const fmtT = s => `${Math.floor(s/60)} 分 ${s%60} 秒`;
+  const bar = document.querySelector('.bar'), fill = bar.querySelector('i');
+  const ptext = document.getElementById('ptext');
+  bar.classList.add('indet'); fill.style.width = '0%';
+  const progPoll = setInterval(async () => {
+    try { const j = await (await fetch('/progress')).json(); if (j && j.value != null) lp = j; } catch (e) {}
+  }, 3000);
+  const timer = setInterval(() => {
+    const s = Math.floor((Date.now() - t0) / 1000);
+    if (lp && lp.value >= lp.max) {
+      bar.classList.remove('indet'); fill.style.width = '100%';
+      ptext.textContent = `收尾中… 已用 ${fmtT(s)}`;
+    } else if (lp) {
+      bar.classList.remove('indet');
+      fill.style.width = (lp.value / lp.max * 100).toFixed(1) + '%';
+      ptext.textContent = `采样 ${lp.value}/${lp.max} · 已用 ${fmtT(s)} · 预计剩余 ${lp.eta}`;
+    } else {
+      ptext.textContent = `加载模型中… 已用 ${fmtT(s)}`;
+    }
+  }, 1000);
+  try {
+   if (mode === 'v2v') {
+    // 真·ControlNet 整片重绘: 服务端一条龙(抽帧->Canny->逐段ControlNet->拼接), 动作逐帧复刻源片
+    if (!frameSrc) { err.textContent = '先传一段视频'; err.style.display = 'block'; throw new Error('no video'); }
+    ptext.textContent = '解析源片 + 生成 Canny 控制帧…';
+    const mpVal = document.getElementById('mp').value;
+    let body;
+    if (frameSrc.name) {
+      body = { desc, mp: mpVal, video: { name: frameSrc.name } };
+    } else {
+      const b64 = await new Promise((res, rej) => {
+        const fr = new FileReader();
+        fr.onload = () => res(String(fr.result).split(',')[1]);
+        fr.onerror = rej;
+        fr.readAsDataURL(frameSrc.file);
+      });
+      body = { desc, mp: mpVal, video: { data_b64: b64, name: frameSrc.file.name } };
+    }
+    const vr = await fetch('/v2v_controlnet', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body) });
+    const vj = await vr.json();
+    if (!vr.ok || vj.error) throw new Error(vj.error || ('HTTP ' + vr.status));
+    const src = `/view?filename=${encodeURIComponent(vj.name)}&subfolder=video&type=output`;
+    document.getElementById('vid').style.display = '';
+    document.getElementById('rimg').style.display = 'none';
+    document.getElementById('vid').src = src;
+    document.getElementById('rdl').href = src;
+    document.getElementById('rname').textContent = `${vj.name}（ControlNet 整片重绘${vj.segs > 1 ? ' · ' + vj.segs + ' 段拼接' : ''} · 动作逐帧跟随源片）`;
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('result').classList.remove('pop'); void document.getElementById('result').offsetWidth;
+    document.getElementById('result').classList.add('pop');
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+    vextMoreOn = false;
+   } else {
+    // 首帧: 第一次=源片尾帧; "再续一段"=最新一段尾帧。带源尺寸锁生成比例
+    let segImg, segRatio = null;
+    if (vextLastVid) {
+      ptext.textContent = '提取上段尾帧…';
+      const tf = await (await fetch('/tail_frame?file=' + encodeURIComponent(vextLastVid))).json();
+      if (!tf.name) throw new Error(tf.error || '尾帧提取失败');
+      segImg = tf.name;
+      if (tf.src_w && tf.src_h) segRatio = tf.src_w / tf.src_h;
+    } else {
+      if (!frameSrc) { err.textContent = '先传一段视频'; err.style.display = 'block'; throw new Error('no video'); }
+      vextSegs = [];   // 新源片: 清空累积段
+      if (frameSrc.name) {
+        const tf = await (await fetch('/tail_frame?file=' + encodeURIComponent(frameSrc.name))).json();
+        if (!tf.name) throw new Error(tf.error || '尾帧提取失败');
+        segImg = tf.name;
+        vextSegs = [frameSrc.name];   // 拼接从源片开始
+        if (tf.src_w && tf.src_h) segRatio = tf.src_w / tf.src_h;
+      } else {
+        const b64 = await new Promise((res, rej) => {
+          const fr = new FileReader();
+          fr.onload = () => res(String(fr.result).split(',')[1]);
+          fr.onerror = rej;
+          fr.readAsDataURL(frameSrc.file);
+        });
+        const vr = await fetch('/video_extend', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ video: { data_b64: b64, name: frameSrc.file.name }, desc, dur: segDur }) });
+        const vj = await vr.json();
+        if (!vr.ok || vj.error) throw new Error(vj.error || ('HTTP ' + vr.status));
+        segImg = vj.tail;
+        vextSegs = [vj.kept || frameSrc.file.name];   // 服务端落盘名, 拼接从源片开始
+        if (vj.src_w && vj.src_h) segRatio = vj.src_w / vj.src_h;
+      }
+    }
+    const out = await buildOut({ desc, dur: segDur, imgName: segImg, mode: 'i2v',
+                                 ratio: segRatio ? nearestRatio(segRatio) : undefined });
+    const r = await fetch('/api/prompt', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                           body: JSON.stringify({ prompt: out }) });
+    const j = await r.json();
+    if (!r.ok || j.error) throw new Error(JSON.stringify(j.error || j, null, 1).slice(0, 600));
+    const vid = await lvWaitSeg(j.prompt_id);
+    vextLastVid = vid.filename;
+    vextSegs.push(vid.filename);
+    clearBoard(); loadedMode = 'i2v';
+    // 拼成完整片: vext=源片+各续段; v2v=各重绘段(首段即改后视频)。失败不阻断, 降级展示单段
+    let show = { filename: vid.filename, subfolder: vid.subfolder || '', type: vid.type || 'output' };
+    let joined = '';
+    try {
+      const cr = await fetch('/concat', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ files: vextSegs, name: (mode === 'v2v' ? '改视频_' : '延续_') + Date.now() + '.mp4' }) });
+      const cj = await cr.json();
+      if (cr.ok && cj.name) { show = { filename: cj.name, subfolder: 'video', type: 'output' }; joined = cj.name; }
+    } catch (e) {}
+    const src = `/view?filename=${encodeURIComponent(show.filename)}&subfolder=${encodeURIComponent(show.subfolder||'')}&type=${show.type||'output'}`;
+    document.getElementById('vid').style.display = '';
+    document.getElementById('rimg').style.display = 'none';
+    document.getElementById('vid').src = src;
+    document.getElementById('rdl').href = src;
+    document.getElementById('rname').textContent = joined
+      ? (mode === 'v2v' ? `${joined}（重绘全片 · 共 ${vextSegs.length} 段 · 可点下方再续）`
+                        : `${joined}（源片+续 ${vextSegs.length - 1} 段 · 共 ${vextSegs.length} 段 · 可点下方再续）`)
+      : (mode === 'v2v' ? `${vid.filename}（拼接失败先展示本段 · 可点下方再续）`
+                        : `${vid.filename}（无缝续 ${segDur} 秒 · 拼接失败先展示本段）`);
+    document.getElementById('result').style.display = 'block';
+    document.getElementById('result').classList.remove('pop'); void document.getElementById('result').offsetWidth;
+    document.getElementById('result').classList.add('pop');
+    document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+    vextMoreOn = true;
+    document.getElementById('vextmore').style.display = 'block';
+   }
+  } catch (e) {
+    vextErr = true;
+    if (String(e.message || e) !== 'no video') {
+      err.textContent = (mode === 'v2v' ? '改视频出错：' : '延续出错：') + String(e.message || e);
+      err.style.display = 'block';
+    }
+  } finally {
+    clearInterval(timer);
+    clearInterval(progPoll);
+    document.getElementById('prog').style.display = 'none';
+    go.disabled = false; go.textContent = '生 成';
+    busy = false;
+    if (pb) { pb.textContent = '空闲'; pb.classList.remove('green'); }
+    refreshRecent();
+  }
+});
+// ==================== 断点防护 ====================
+// 视频延续"再续一段"按钮: 点一次续一段, 可无限续
+document.getElementById('vextmorebtn').onclick = () => {
+  if (busy) return;
+  document.getElementById('go').click();   // 复用同一处理器, vextLastVid 决定取源片还是最新段尾帧
+};
+// ① 最近成片/正在生成找回栏: 关网页/重启面板后一键找回(生成在 ComfyUI 里跑, 不在网页里)
+let busySeenAt = null;
+let reviveIv = null;   // 2026-10-15 关网页重开后恢复主进度看板的轮询句柄(点「📊 看进度」启动)
+let optRunning = false;  // 优化请求进行中, 防止 15s 轮询把按钮提前解锁
+let fbTarget = null;     // 反馈重写对象: {name, sub} 成片
+let refineHist = [];     // 反馈重写历史 [{feedback, prev, next}], 多轮沟通上下文, 随草稿持久化
+
+function renderHist() {
+  const box = document.getElementById('fbhist');
+  const clearBtn = document.getElementById('fbclear');
+  if (!refineHist.length) { box.innerHTML = ''; clearBtn.style.display = 'none'; return; }
+  clearBtn.style.display = '';
+  box.innerHTML = refineHist.map((h, i) =>
+    `<div style="font-size:12px;color:#a9b7c9;margin-top:4px">第${i + 1}轮 ✓ 你说：<b style="color:#c8d3e2">${String(h.feedback).replace(/</g, '&lt;')}</b></div>`
+  ).join('') + `<div style="font-size:12px;color:var(--green-d);margin-top:4px">—— 当前迭代第 ${refineHist.length + 1} 轮 ——</div>`;
+}
+
+function openRefine(it) {
+  fbTarget = it;
+  document.getElementById('fbname').textContent = it.name;
+  document.getElementById('fbhint').textContent = it.sub === 'video' ? '（视频：AI 将自动截取最后一帧来对照找问题）' : '（AI 将直接看这张成片图对照找问题）';
+  document.getElementById('fbtext').value = '';
+  document.getElementById('refinebar').style.display = 'block';
+  renderHist();
+  document.getElementById('fbtext').focus();
+}
+
+function imgUrlToB64(url) {
+  return fetch(url).then(r => r.blob()).then(blob => new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onload = () => res(String(fr.result).split(',')[1]);
+    fr.onerror = rej;
+    fr.readAsDataURL(blob);
+  }));
+}
+
+document.getElementById('fbcancel').onclick = () => {
+  document.getElementById('refinebar').style.display = 'none';
+  fbTarget = null;
+};
+
+document.getElementById('fbclear').onclick = () => {
+  if (!confirm('清空全部迭代记录？\n（当前 prompt 保留，只是 AI 忘掉前几轮讨论）')) return;
+  refineHist = [];
+  renderHist();
+  saveDraft();
+};
+
+document.getElementById('fbsend').onclick = async () => {
+  const fb = document.getElementById('fbtext').value.trim();
+  const err = document.getElementById('err');
+  err.style.display = 'none';
+  if (!fb) { alert('先写一句这版哪里不好'); return; }
+  if (!fbTarget) return;
+  if (optRunning) { alert('AI 优化/重写正在跑，等它写完再反馈'); return; }
+  const ta = document.getElementById('prompt');
+  const prev = ta.value.trim();
+  if (!prev) { alert('当前提示词框是空的——先点「✨ AI 优化描述」生成 prompt 并出片一版，再对成片反馈重写'); return; }
+  if (await gpuBusy() && !confirm('正在生成视频，显卡被占满——现在重写会卡好几分钟。建议等生成完再点。\n【确定】硬等  【取消】稍后再说')) return;
+  const btn = document.getElementById('fbsend');
+  btn.disabled = true; btn.textContent = '✍️ 反馈重写中…';
+  optRunning = true;
+  try {
+    const image = await getImgB64();  // i2v 首帧 / i2e 原图(若有): 与尾帧双图对照
+    let result_image;
+    if (fbTarget.sub !== 'video') {
+      result_image = await imgUrlToB64(`/view?filename=${encodeURIComponent(fbTarget.name)}&subfolder=${encodeURIComponent(fbTarget.sub)}&type=output`);
+    }
+    const r = await fetch('/optimize', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: lastOptText || prev, mode, feedback: fb, prev, history: refineHist,
+                             opt_model: document.getElementById('optmodel').value,
+                             dur: document.getElementById('dur').value, ratio: document.getElementById('ratio').value,
+                             mp: document.getElementById('mp').value,
+                             ...(fbTarget.sub === 'video' ? { video: fbTarget.name } : {}),
+                             ...(image ? { image } : {}), ...(result_image ? { result_image } : {}) }) });
+    const j = await r.json();
+    if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
+    ta.value = fmtPrompt(j.prompt);
+    showOptZh(j.prompt_zh);
+    if (j.duration) document.getElementById('dur').value = j.duration;
+    // 清晰度只认用户手选, AI 优化结果不碰（2026-10-13 用户拍板：点之前是什么就是什么）
+    renderBoard(j.storyboard);
+    refineHist.push({ feedback: fb, prev, next: j.prompt });  // 记入对话史, 下轮反馈 AI 记得
+    renderHist();
+    document.getElementById('refinebar').style.display = 'none';
+    fbTarget = null;
+    saveDraft();
+    ta.focus();
+  } catch (e) {
+    err.textContent = '反馈重写失败：' + String(e.message || e);
+    err.style.display = 'block';
+  } finally {
+    optRunning = false;
+    btn.disabled = false; btn.textContent = '✍️ 按反馈重写 prompt';
+  }
+};
+
+// —— 提示词级对话(2026-10-26): 不用先出片, 直接对当前 prompt 提要求, 可连续多轮 ——
+function renderAskHist() {
+  const box = document.getElementById('askhist');
+  const clr = document.getElementById('askclear');
+  if (!refineHist.length) { box.innerHTML = ''; clr.style.display = 'none'; return; }
+  clr.style.display = '';
+  box.innerHTML = refineHist.map((h, i) =>
+    `<div>第${i + 1}轮 ✓ 你说：<b style="color:#c8d3e2">${String(h.feedback).replace(/</g, '&lt;')}</b></div>`
+  ).join('') + `<div style="color:var(--green-d)">—— 当前第 ${refineHist.length + 1} 轮 ——</div>`;
+}
+
+function syncAskRow() {
+  document.getElementById('askrow').style.display = document.getElementById('prompt').value.trim() ? 'flex' : 'none';
+}
+
+document.getElementById('prompt').addEventListener('input', syncAskRow);
+
+// 回车直接提交(2026-10-26): 输入框里按回车原本毫无反应, 用户会以为按钮坏了
+document.getElementById('askinput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('askbtn').click(); }
+});
+
+document.getElementById('askclear').onclick = () => {
+  if (!confirm('清空这段对话记录？\n（当前提示词保留，只是 AI 忘掉前几轮讨论）')) return;
+  refineHist = [];
+  renderAskHist();
+  saveDraft();
+};
+
+document.getElementById('askbtn').onclick = async () => {
+  const inp = document.getElementById('askinput');
+  const fb = inp.value.trim();
+  const err = document.getElementById('err');
+  const btn = document.getElementById('askbtn');
+  err.style.display = 'none';
+  if (!fb) { inp.focus(); return; }
+  if (optRunning) { alert('AI 正在写，等它写完再改'); return; }
+  const ta = document.getElementById('prompt');
+  const before = ta.value.trim();
+  if (!before) { alert('提示词框是空的——先写描述或点「✨ AI 优化描述」'); return; }
+  // 先亮状态(2026-10-26): 之前显卡忙/确认被取消时会在按钮变字之前就 return, 用户以为没点上
+  btn.disabled = true; btn.textContent = '✍️ 改写中…';
+  optRunning = true;
+  try {
+    if (await gpuBusy() && !confirm('正在生成视频，显卡被占满——现在改会卡好几分钟。建议等生成完再点。\n【确定】硬等  【取消】稍后再说')) return;
+    const image = await getImgB64();
+    const r = await fetch('/optimize', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: lastOptText || before, mode, feedback: fb, prev: before, history: refineHist,
+                             opt_model: document.getElementById('optmodel').value,
+                             dur: document.getElementById('dur').value, ratio: document.getElementById('ratio').value,
+                             mp: document.getElementById('mp').value, ...(image ? { image } : {}) }) });
+    const j = await r.json();
+    if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
+    ta.value = fmtPrompt(j.prompt);
+    showOptZh(j.prompt_zh);
+    if (j.duration) document.getElementById('dur').value = j.duration;
+    renderBoard(j.storyboard);
+    refineHist.push({ feedback: fb, prev: before, next: j.prompt });
+    renderAskHist();
+    inp.value = '';
+    saveDraft();
+    syncAskRow();
+  } catch (e) {
+    err.textContent = '改写失败：' + String(e.message || e);
+    err.style.display = 'block';
+  } finally {
+    optRunning = false; btn.disabled = false; btn.textContent = '✍️ 让 AI 按我的想法调';
+  }
+};
+
+async function refreshRecent() {
+  let j = null;
+  try { j = await (await fetch('/recent')).json(); } catch (e) { return; }
+  document.getElementById('offbar').style.display = (j && j.up) ? 'none' : 'block';  // ComfyUI 没开就挂状态条
+  const box = document.getElementById('recent');
+  const items = (j && j.items) || [];
+  const busy = (j && j.busy) || 0;
+  const optBtn = document.getElementById('opt');
+  optBtn.disabled = !!busy || optRunning;  // 生成中禁止点优化: 显卡被占满, 优化会掉进内存跑 10 分钟+
+  optBtn.title = busy ? '正在生成视频——此时优化会被挤到内存里跑 10 分钟以上，等出片后再点' : '把大白话描述改写成专业提示词';
+  let upBadge = '', upRunning = false;
+  try { const u = await (await fetch('/upscale_progress')).json();
+        if (u && u.running) { upRunning = true;
+          const t = u.phase === 'mux' ? '封装中' : (u.phase === 'wait_gen' ? '等生成完成' : `${u.frame||0}/${u.total||'…'}帧`);
+          upBadge = `<b class="busy" style="color:#6ed4b1">🔍 超分1080p ${t}…</b>`; }
+        else if (u && u.phase === 'error' && u.ts && (Date.now()/1000 - u.ts) < 180) {
+          upBadge = `<b style="color:#f48d7f">❌ 超分失败（${u.msg||'未知'}）</b>`; } } catch (e) {}
+  if (!busy && !items.length && !upRunning) { box.style.display = 'none'; return; }
+  let head;
+  if (busy) {
+    if (!busySeenAt) busySeenAt = Date.now();
+    const mins = Math.floor((Date.now() - busySeenAt) / 60000);
+    head = `<b class="busy">🎬 正在生成 ${busy} 个任务${mins ? `，已用 ${mins} 分` : '…'}</b><button class="cancel" id="cancelbtn">取消生成</button><button id="revivebtn" title="把主区域的实时进度看板找回来" style="margin-left:6px;padding:1px 10px;border:1px solid #3a5069;border-radius:10px;background:#1b293d;cursor:pointer;font-size:12px;color:#a9b7c9">📊 看进度</button>`;
+  } else {
+    busySeenAt = null;
+    if (reviveIv) {   // 2026-10-15 恢复看板还开着但后台任务已结束: 报喜后收起
+      const ptext = document.getElementById('ptext');
+      if (ptext) ptext.textContent = '✅ 已出片——文件在 output 目录';
+      clearInterval(reviveIv); reviveIv = null;
+      const vb2 = document.getElementById('revivebtn');
+      if (vb2) vb2.textContent = '📊 看进度';
+      setTimeout(() => { document.getElementById('prog').style.display = 'none'; }, 3500);
+    }
+    head = `<span style="font-weight:600;color:var(--ink)">🕘 最近成片</span><span style="color:var(--weak)">（点选用 / 播放）：</span>` +
+           `<span style="margin-left:auto;display:flex;align-items:center;gap:8px;flex:none;font-size:12px;color:#7d90a8">共 ${(j.total_mb/1024).toFixed(1)} GB` +
+           (items.length ? `<button class="cancel" id="cleanbtn" title="删掉 output 目录里的全部成片">清理全部</button>` : '') + `</span>`;
+  }
+  head += upBadge;
+  box.innerHTML = `<div class="rhead">${head}</div><div class="chiprow">` + items.map((it, idx) => {
+    const src = `/view?filename=${encodeURIComponent(it.name)}&subfolder=${encodeURIComponent(it.sub)}&type=output`;
+    const th = it.sub === 'video' ? `<video src="${src}" preload="metadata" muted></video>` : `<img src="${src}" loading="lazy">`;
+    return `<div class="chip" data-i="${idx}"><div class="th">${th}<button class="fb" data-i="${idx}" title="对这版不满意？告诉 AI 哪里不好，重写提示词">✍</button><button class="del" data-i="${idx}" title="删除此成片">✕</button></div><div class="nm">${it.name}<span style="float:right;color:#c9c5bc">${it.size_mb >= 1024 ? (it.size_mb/1024).toFixed(1)+'G' : Math.round(it.size_mb)+'M'}</span></div></div>`;
+  }).join('') + '</div>';
+  box.style.display = 'block';
+  const cb = document.getElementById('cancelbtn');
+  if (cb) cb.onclick = async () => {
+    if (!confirm('确定取消？正在跑的任务会立刻停、排队中的也会清空，已跑的部分不保存。')) return;
+    cb.disabled = true; cb.textContent = '取消中…';
+    try {
+      await fetch('/interrupt', { method: 'POST' });
+      await fetch('/api/queue', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ clear: true }) });
+    } catch (e) {}
+    busySeenAt = null;
+    refreshRecent();
+  };
+  const vb = document.getElementById('revivebtn');
+  if (vb) vb.onclick = () => {
+    if (reviveIv) {   // 已在看 → 收起
+      clearInterval(reviveIv); reviveIv = null;
+      vb.textContent = '📊 看进度';
+      document.getElementById('prog').style.display = 'none';
+      return;
+    }
+    const prog = document.getElementById('prog');
+    prog.style.display = 'block';
+    prog.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    vb.textContent = '📊 收起进度';
+    const bar = prog.querySelector('.bar'), fill = bar.querySelector('i');
+    const ptext = document.getElementById('ptext');
+    bar.classList.add('indet'); fill.style.width = '0%';
+    ptext.textContent = '正在接管后台任务的进度…';
+    let lp = null;
+    reviveIv = setInterval(async () => {
+      if (document.getElementById('go').disabled) {   // 本页点了新生成(go被禁): 原生看板接管, 恢复循环让位
+        clearInterval(reviveIv); reviveIv = null;
+        vb.textContent = '📊 看进度';
+        return;
+      }
+      try {
+        const j = await (await fetch('/progress')).json();
+        if (j && j.value != null) lp = j;
+      } catch (e) {}
+      if (lp && lp.value >= lp.max) {
+        bar.classList.remove('indet'); fill.style.width = '100%';
+        ptext.textContent = '收尾中（解码保存）…';
+      } else if (lp) {
+        bar.classList.remove('indet');
+        fill.style.width = (lp.value / lp.max * 100).toFixed(1) + '%';
+        ptext.textContent = `采样 ${lp.value}/${lp.max} · 预计剩余 ${lp.eta}`;
+      } else {
+        ptext.textContent = '加载模型/排队中…（显卡在跑，进度数据马上来）';
+      }
+    }, 2000);
+  };
+  box.querySelectorAll('.del').forEach(b => b.onclick = async (ev) => {
+    ev.stopPropagation();
+    const it = items[+b.dataset.i];
+    if (!confirm(`删除成片「${it.name}」？\n会移入回收站（output/_trash，7 天后自动清除），误删可找回`)) return;
+    b.disabled = true;
+    try {
+      const r = await fetch('/delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: it.name, sub: it.sub }) });
+      const j = await r.json();
+      if (!r.ok || !j.ok) throw new Error(j.error || '删除失败');
+      refreshRecent();
+    } catch (e) { alert('删除失败：' + e.message); b.disabled = false; }
+  });
+  box.querySelectorAll('.fb').forEach(b => b.onclick = (ev) => {
+    ev.stopPropagation();
+    openRefine(items[+b.dataset.i]);
+  });
+  const cleanBtn = document.getElementById('cleanbtn');
+  if (cleanBtn) cleanBtn.onclick = async (ev) => {
+    ev.stopPropagation();
+    if (!confirm(`把 output 目录里的全部成片（当前共 ${(j.total_mb/1024).toFixed(1)} GB）都清理掉？\n会移入回收站（output/_trash，7 天后自动清除），误删可找回`)) return;
+    cleanBtn.disabled = true;
+    try {
+      const r = await fetch('/deleteall', { method: 'POST' });
+      const dj = await r.json();
+      if (!r.ok || !dj.ok) throw new Error(dj.error || '清理失败');
+      alert(`已清理 ${dj.n} 个成片，释放 ${dj.freed_mb >= 1024 ? (dj.freed_mb/1024).toFixed(1)+' GB' : Math.round(dj.freed_mb)+' MB'}`);
+      refreshRecent();
+    } catch (e) { alert('清理失败：' + e.message); cleanBtn.disabled = false; }
+  };
+  box.querySelectorAll('.chip').forEach(c => c.onclick = () => {
+    const it = items[+c.dataset.i];
+    if (it.sub === 'video' && (mode === 'frame' || mode === 'vext' || mode === 'v2v' || mode === 'vup')) {
+      pickRecentVideo(it);   // 需要源视频的模式: 点视频片=选为源
+      return;
+    }
+    loadIntoResult(`/view?filename=${encodeURIComponent(it.name)}&subfolder=${encodeURIComponent(it.sub)}&type=output`, it.name, it.sub);
+  });
+}
+
+function loadIntoResult(src, name, sub) {
+  const isImg = sub === 'image';
+  document.getElementById('vid').style.display = isImg ? 'none' : '';
+  document.getElementById('rimg').style.display = isImg ? '' : 'none';
+  if (isImg) document.getElementById('rimg').src = src;
+  else document.getElementById('vid').src = src;
+  document.getElementById('rdl').href = src;
+  document.getElementById('rname').textContent = name;
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+}
+
+refreshRecent();
+setInterval(refreshRecent, 15000);
+
+// ② 草稿自动保存: 描述/时长/比例/档位/传过的照片全记住, 关机死机误关网页后开机一键重交
+const DRAFT_KEY = 'h3_draft_v1';
+const DRAFT_FIELDS = ['prompt', 'dur', 'mp', 'ratio', 'isize', 'emp', 'eratio', 'optmodel'];
+
+function saveDraft() {
+  try {
+    const d = { mode, imgName, refNames: refNames.slice(), imgRatio, refineHist: refineHist.slice(),
+                turbo: curQuality() === 'turbo' };
+    for (const id of DRAFT_FIELDS) { const el = document.getElementById(id); if (el) d[id] = el.value; }
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
+  } catch (e) {}
+}
+
+let draftTimer = null;
+function draftSoon() { clearTimeout(draftTimer); draftTimer = setTimeout(saveDraft, 400); }
+
+function restoreDraft() {
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch (e) {}
+  if (!d || !MODES[d.mode]) return false;
+  mode = d.mode;
+  for (const id of DRAFT_FIELDS) {
+    if (d[id] != null) { const el = document.getElementById(id); if (el) el.value = d[id]; }
+  }
+  if (d.turbo != null) setQuality(d.turbo ? 'turbo' : 'full');
+  imgName = d.imgName || null;
+  imgRatio = d.imgRatio || null;
+  refNames = Array.isArray(d.refNames) ? d.refNames.filter(x => typeof x === 'string') : [];
+  refineHist = (Array.isArray(d.refineHist) ? d.refineHist : []).filter(h => h && typeof h.feedback === 'string' && typeof h.next === 'string').slice(-20);
+  renderAskHist(); syncAskRow();
+  return true;
+}
+
+function renderDraftUploads() {
+  const prev = document.getElementById('prev');
+  prev.innerHTML = '';
+  if (imgName) {
+    drop.firstChild.textContent = '✅ 主图已恢复（点击可更换）';
+    const img = new Image();
+    img.onerror = () => { imgName = null; prev.innerHTML = ''; drop.firstChild.textContent = '点击选择图片，或把图片拖到这里'; saveDraft(); };
+    img.src = '/view?filename=' + encodeURIComponent(imgName) + '&type=input';
+    prev.appendChild(img);
+  }
+  const refprev = document.getElementById('refprev');
+  refprev.innerHTML = '';
+  refNames.forEach(n => {
+    const img = new Image();
+    img.onerror = () => { refNames = refNames.filter(x => x !== n); renderDraftUploads(); saveDraft(); };
+    img.src = '/view?filename=' + encodeURIComponent(n) + '&type=input';
+    refprev.appendChild(img);
+  });
+  if (refNames.length) refdrop.firstChild.textContent = `✅ 已加 ${refNames.length} 张辅助参考（点击可追加，最多 3 张）`;
+}
+
+// 启动: 有草稿就恢复(标签高亮→套用界面→恢复上传预览)
+if (restoreDraft()) {
+  document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x.dataset.mode === mode));
+  applyMode();
+  renderDraftUploads();
+}
+
+// 保存触发: 手打描述防抖, 下拉/档位即时, 上传与 AI 优化成功后落盘
+DRAFT_FIELDS.forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('change', saveDraft); });
+document.getElementById('prompt').addEventListener('input', () => {
+  if (document.getElementById('board').style.display === 'block') clearBoard();  // 手打新描述=旧分镜作废
+  draftSoon();
+});
+
+// 🗑 清空重来: 描述/主图/辅助参考/分镜全清 + 空草稿落盘(刷新也不再复活上次内容)
+document.getElementById('clrbtn').onclick = () => {
+  if (!confirm('清空当前描述和已传照片，重新开始？\n（已生成的视频不受影响）')) return;
+  document.getElementById('prompt').value = '';
+  imgName = null; imgRatio = null;
+  document.getElementById('prev').innerHTML = '';
+  refNames = [];
+  document.getElementById('refprev').innerHTML = '';
+  clearBoard();
+  refineHist = [];
+  renderAskHist(); syncAskRow();
+  saveDraft();
+  document.getElementById('prompt').focus();
+};
+
+// ✨ 照片清晰化
+const enhdrop = document.getElementById('enhdrop'), enhfile = document.getElementById('enhfile');
+let enhName = null;
+enhdrop.onclick = () => enhfile.click();
+enhdrop.ondragover = e => { e.preventDefault(); enhdrop.classList.add('over'); };
+enhdrop.ondragleave = () => enhdrop.classList.remove('over');
+enhdrop.ondrop = e => { e.preventDefault(); enhdrop.classList.remove('over'); enhPick(e.dataTransfer.files); };
+enhfile.onchange = () => enhPick(enhfile.files);
+async function enhPick(files) {
+  const arr = [...files].filter(f => f.type.startsWith('image/'));
+  if (!arr.length) return;
+  enhdrop.firstChild.textContent = '上传中…';
+  const fd = new FormData(); fd.append('image', arr[0]);
+  const r = await fetch('/upload/image', { method: 'POST', body: fd });
+  const j = await r.json();
+  enhName = j.name;
+  enhdrop.firstChild.textContent = '✅ 已传：' + arr[0].name + '（点击可更换）';
+  document.getElementById('enhprev').innerHTML = '';
+  const img = document.createElement('img');
+  img.src = '/view?filename=' + encodeURIComponent(j.name) + '&type=input';
+  document.getElementById('enhprev').appendChild(img);
+}
+document.getElementById('enhgo').onclick = async () => {
+  if (!enhName) { alert('先传一张照片'); return; }
+  busy = true;
+  document.getElementById('enhgo').disabled = true;
+  document.getElementById('enhprog').style.display = '';
+  document.getElementById('enhresult').style.display = 'none';
+  try {
+    const r = await fetch('/enhance_photo', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: enhName, face: document.getElementById('enhface').value,
+                             scale: +document.getElementById('enhscale').value })
+    });
+    const j = await r.json();
+    if (!j.ok) throw new Error(j.error || '失败');
+    const src = '/view?filename=' + encodeURIComponent(j.name) + '&subfolder=image&type=output';
+    document.getElementById('enhimg').src = src;
+    document.getElementById('enhname').textContent = j.name;
+    const dl = document.getElementById('enhdl');
+    dl.href = src; dl.setAttribute('download', j.name);
+    document.getElementById('enhresult').style.display = '';
+    refreshRecent();
+  } catch (e) { alert('增强失败：' + (e.message || e)); }
+  document.getElementById('enhprog').style.display = 'none';
+  document.getElementById('enhgo').disabled = false;
+  busy = false;
+};
+</script>
+<script>
+/* ===== 无限画布页签 v3（10-17：topbar 内联 + 带当前首帧去画布改图回路）===== */
+(function () {
+  var CANVAS_URL = 'http://127.0.0.1:7865';
+  var tb = document.querySelector('.topbar');
+  if (!tb) return;
+  var tab = document.createElement('span');
+  tab.textContent = '🎨 无限画布';
+  tab.title = '打开无限画布（出图/图改图/局部重绘，可一键送回本面板出视频）';
+  tab.style.cssText = 'background:linear-gradient(90deg,#5fd6e2,#2aa7bd);color:#06222b;font-weight:700;padding:4px 14px;border-radius:20px;cursor:pointer;font-size:13.5px;white-space:nowrap;user-select:none;box-shadow:0 2px 8px rgba(73,204,218,.30);';
+  tb.appendChild(tab);
+  var editBtn = document.createElement('span');
+  editBtn.textContent = '✎ 带首帧改图';
+  editBtn.title = '把当前首帧送进无限画布做 Qwen2.1 图改图，改完点卡片 🎬 送回';
+  editBtn.style.cssText = 'background:#2c313a;color:#ffb25c;font-weight:700;padding:3px 12px;border-radius:20px;cursor:pointer;font-size:13px;white-space:nowrap;user-select:none;display:none;';
+  tb.appendChild(editBtn);
+  var panel = document.createElement('div');
+  panel.style.cssText = 'position:fixed;inset:0;z-index:99998;background:#14161a;display:none;';
+  var frame = document.createElement('iframe');
+  frame.style.cssText = 'border:0;width:100%;height:100%;';
+  frame.setAttribute('allow', 'clipboard-read; clipboard-write; download');
+  panel.appendChild(frame);
+  /* 关闭钮放右下角：画布自身顶栏右侧有状态丸、左侧有 logo，右下角是空带 */
+  var closeBtn = document.createElement('div');
+  closeBtn.textContent = '✕ 关闭画布 (ESC)';
+  closeBtn.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:99999;background:#2c313a;color:#e8eaee;padding:7px 14px;border-radius:11px;cursor:pointer;font-size:13px;display:none;font-family:Microsoft YaHei,system-ui,sans-serif;box-shadow:0 2px 10px rgba(0,0,0,.5);';
+  document.body.appendChild(panel);
+  document.body.appendChild(closeBtn);
+  var launched = false;
+  function open(url) {
+    panel.style.display = 'block';
+    tab.style.display = 'none';
+    editBtn.style.display = 'none';
+    closeBtn.style.display = 'block';
+    if (url) {
+      fetch('/canvas_launch').catch(function () {});
+      if (launched) { frame.src = url; }
+      else { launched = true; frame.src = 'about:blank'; setTimeout(function () { frame.src = url; }, 1800); }
+    } else if (!launched) {
+      launched = true;
+      frame.src = 'about:blank';
+      fetch('/canvas_launch').catch(function () {});
+      setTimeout(function () { frame.src = CANVAS_URL; }, 1800);
+    }
+  }
+  function close() {
+    panel.style.display = 'none';
+    tab.style.display = '';
+    closeBtn.style.display = 'none';
+    syncEdit();
+  }
+  function syncEdit() {
+    try { editBtn.style.display = (typeof imgName !== 'undefined' && imgName && panel.style.display !== 'block') ? '' : 'none'; }
+    catch (e) { editBtn.style.display = 'none'; }
+  }
+  tab.onclick = function () { open(null); };
+  closeBtn.onclick = close;
+  setInterval(syncEdit, 1500);
+  editBtn.onclick = function () {
+    try {
+      if (typeof imgName === 'undefined' || !imgName) return;
+      var sub = null, fn = imgName, i = imgName.indexOf('/');
+      if (i > 0) { sub = imgName.slice(0, i); fn = imgName.slice(i + 1); }
+      var u = CANVAS_URL + '/?src=' + encodeURIComponent(fn) + '&type=input'
+            + '&prefill=' + encodeURIComponent((document.getElementById('prompt') || {}).value || '');
+      if (sub) u += '&subfolder=' + encodeURIComponent(sub);
+      open(u);
+    } catch (e) {}
+  };
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && panel.style.display === 'block') close();
+  });
+  syncEdit();
+})();
+
+/* ---------- 视频复刻（换商品/换装） ---------- */
+const repState = { file:null, prod:null, box:null, scale:1, drag:null, timer:null };
+(function bindReplicate(){
+  const drop = document.getElementById('repdrop');
+  const file = document.getElementById('repfile');
+  const prod = document.getElementById('repprod');
+  const prodf = document.getElementById('repprodfile');
+  const cv = document.getElementById('repcanvas');
+  if (!drop || !cv) return;
+
+  drop.onclick = () => file.click();
+  file.onchange = () => repLoadVideo(file.files[0]);
+  drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+  drop.ondragleave = () => drop.classList.remove('over');
+  drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); repLoadVideo(e.dataTransfer.files[0]); };
+
+  prod.onclick = () => prodf.click();
+  prodf.onchange = () => {
+    repState.prod = prodf.files[0];
+    prod.firstChild.textContent = '✅ 商品图：' + repState.prod.name;
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(repState.prod);
+    img.style.cssText = 'max-width:160px;max-height:120px;border-radius:8px;margin-top:8px';
+    const holder = document.getElementById('repprodprev');
+    holder.innerHTML = '';
+    holder.appendChild(img);
+  };
+
+  function repLoadVideo(f) {
+    if (!f || !f.type.startsWith('video/')) return;
+    repState.file = f;
+    drop.firstChild.textContent = '✅ 原视频：' + f.name;
+    repState.box = null;
+    document.getElementById('repboxinfo').textContent = '还没选区域';
+    const v = document.createElement('video');
+    v.muted = true; v.playsInline = true;
+    v.src = URL.createObjectURL(f);
+    v.onloadeddata = () => {
+      v.currentTime = Math.min(0.5, (v.duration || 1) / 3);
+      v.onseeked = () => {
+        const sc = Math.min(1, 900 / v.videoWidth);
+        repState.scale = sc;
+        cv.width = Math.round(v.videoWidth * sc);
+        cv.height = Math.round(v.videoHeight * sc);
+        cv._frame = v;
+        repDraw();
+      };
+    };
+  }
+
+  function repDraw() {
+    const v = cv._frame; if (!v) return;
+    const g = cv.getContext('2d');
+    g.drawImage(v, 0, 0, cv.width, cv.height);
+    const b = repState.box;
+    if (b) {
+      g.strokeStyle = '#ff8a3d'; g.lineWidth = 2;
+      g.strokeRect(b.x * repState.scale, b.y * repState.scale, b.w * repState.scale, b.h * repState.scale);
+      g.fillStyle = 'rgba(255,138,61,.12)';
+      g.fillRect(b.x * repState.scale, b.y * repState.scale, b.w * repState.scale, b.h * repState.scale);
+    }
+  }
+
+  function pos(e) {
+    const r = cv.getBoundingClientRect();
+    return { x: (e.clientX - r.left) * (cv.width / r.width),
+             y: (e.clientY - r.top) * (cv.height / r.height) };
+  }
+  cv.onmousedown = e => { repState.drag = pos(e); };
+  cv.onmousemove = e => {
+    if (!repState.drag) return;
+    const p = pos(e), d = repState.drag;
+    repDraw();
+    const g = cv.getContext('2d');
+    g.strokeStyle = '#4fd8e8'; g.setLineDash([5, 4]); g.lineWidth = 2;
+    g.strokeRect(Math.min(d.x, p.x), Math.min(d.y, p.y), Math.abs(p.x - d.x), Math.abs(p.y - d.y));
+    g.setLineDash([]);
+  };
+  cv.onmouseup = e => {
+    if (!repState.drag) return;
+    const p = pos(e), d = repState.drag; repState.drag = null;
+    const x = Math.min(d.x, p.x), y = Math.min(d.y, p.y);
+    const w = Math.abs(p.x - d.x), h = Math.abs(p.y - d.y);
+    if (w < 20 || h < 20) { document.getElementById('repboxinfo').textContent = '框太小了，再拖一次'; return; }
+    repState.box = { x: Math.round(x / repState.scale), y: Math.round(y / repState.scale),
+                     w: Math.round(w / repState.scale), h: Math.round(h / repState.scale) };
+    document.getElementById('repboxinfo').textContent =
+      '区域：x ' + repState.box.x + ' · y ' + repState.box.y + ' · 宽 ' + repState.box.w + ' · 高 ' + repState.box.h + '（原片像素）';
+    repDraw();
+  };
+
+  const b64 = f => new Promise(res => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result).split(',')[1] || '');
+    r.readAsDataURL(f);
+  });
+
+  document.getElementById('repgo').onclick = async () => {
+    if (!repState.file) return alert('先选原视频');
+    if (!repState.prod) return alert('再上传一张新商品图');
+    if (!repState.box) return alert('在画面上拖一个框，圈住要换的东西');
+    const go = document.getElementById('repgo');
+    go.disabled = true; go.textContent = '提交中…';
+    const body = JSON.stringify({
+      video_b64: await b64(repState.file),
+      product_b64: await b64(repState.prod),
+      box: [repState.box.x, repState.box.y, repState.box.w, repState.box.h],
+      prompt: (document.getElementById('repprompt').value || '').trim(),
+      key_step: 12
+    });
+    try {
+      const r = await fetch('/video_replicate', { method: 'POST', headers: {'Content-Type':'application/json'}, body });
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.error || '提交失败');
+      document.getElementById('repprog').style.display = 'block';
+      document.getElementById('represult').style.display = 'none';
+      document.getElementById('reptext').textContent = '已提交，正在处理…';
+      repPoll();
+    } catch (e) {
+      alert('提交失败：' + e.message);
+    } finally {
+      go.disabled = false; go.textContent = '🔁 开始复刻';
+    }
+  };
+
+  function repPoll() {
+    clearInterval(repState.timer);
+    repState.timer = setInterval(async () => {
+      try {
+        const j = await (await fetch('/replicate_progress')).json();
+        const bar = document.getElementById('repbar');
+        document.getElementById('reptext').textContent =
+          (j.phase || '') + (j.total ? ' ' + (j.done||0) + '/' + j.total : '') + (j.msg ? ' · ' + j.msg : '');
+        if (j.total) bar.style.width = Math.min(100, Math.round((j.done||0) / j.total * 100)) + '%';
+        if (!j.running && j.result) {
+          clearInterval(repState.timer);
+          const name = String(j.result).split(/[\\/]/).pop();
+          document.getElementById('repvid').src =
+            '/view?filename=' + encodeURIComponent(name) + '&subfolder=video&type=output&t=' + Date.now();
+          document.getElementById('represult').style.display = 'block';
+          document.getElementById('repname').textContent = '已生成：output\\video\\' + name;
+          document.getElementById('reptext').textContent = '完成';
+          bar.style.width = '100%';
+        }
+        if (!j.running && j.error) {
+          clearInterval(repState.timer);
+          document.getElementById('reptext').textContent = '失败：' + j.error;
+        }
+      } catch (e) {}
+    }, 2500);
+  }
+})();
+
+</script>
+<script src="guide.js?v=20261027a"></script>
+</body>
+</html>
